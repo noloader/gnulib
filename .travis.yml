@@ -20,7 +20,7 @@ jobs:
       arch: amd64
       dist: bionic
       compiler: clang
-
+  exclude:
     # ARM64
     - name: Standard, GCC, Ubuntu Bionic (Aarch64)
       os: linux
