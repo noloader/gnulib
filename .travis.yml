@@ -20,7 +20,7 @@ jobs:
       arch: amd64
       dist: bionic
       compiler: clang
-  exclude:
+
     # ARM64
     - name: Standard, GCC, Ubuntu Bionic (Aarch64)
       os: linux
@@ -138,6 +138,7 @@ before_script:
 script:
   - cp ci_tests/test_modules.sh .
   - bash test_modules.sh
+  - echo "-----"; cat result.txt
 
 # Whitelist branches to avoid testing feature branches twice
 branches:
