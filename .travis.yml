@@ -46,7 +46,7 @@ jobs:
       compiler: clang
       env:
       - CC=clang-8
-      - CC=clang++-8
+      - CXX=clang++-8
 
     # s390x
     - name: Standard, GCC, Ubuntu Bionic (s390x)
@@ -61,7 +61,7 @@ jobs:
       compiler: clang
       env:
       - CC=clang-8
-      - CC=clang++-8
+      - CXX=clang++-8
 
     # Older OS
     - name: Standard, GCC, Ubuntu Trusty (Amd64)
