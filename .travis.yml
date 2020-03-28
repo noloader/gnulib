@@ -4,6 +4,15 @@ dist: bionic
 git:
   depth: 5
 
+# The update at this point works around a Brew bug
+addons:
+  apt:
+    packages:
+    update: true
+  homebrew:
+    packages:
+    update: true
+
 # Use jobs rather than matrix since we are precisely specifiying test cases.
 # Do not move any of the keys (env, os, arch, compiler, etc) into global.
 # Placing them in global invokes matrix expansion, which we don't want.
@@ -167,7 +176,7 @@ jobs:
       - CXXFLAGS="-fanitize=address"
       - LDFLAGS="-fanitize=address"
 
-  allow_failure:
+  allow_failures:
     - name: Asan, GCC, Ubuntu Bionic (Amd64)
     - name: Asan, Clang, Ubuntu Bionic (Amd64)
 

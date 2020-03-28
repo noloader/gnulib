@@ -6,8 +6,11 @@ test_dir=$(dirname $(pwd))/gnulib_test
 rm -rf "$test_dir"
 mkdir -p "$test_dir"
 
+# Result file is dumped to screen at end of testing
 result_file=$(pwd)/result.txt
-module_list=$(find modules -name '*tests' | sed -e 's|^modules/||g' -e 's|-tests$||g' | sort | head -n 32)
+
+# TODO: determine a methodology
+module_list=$(find modules -name '*tests' | sed -e 's|^modules/||g' -e 's|-tests$||g' | sort | head -n 48)
 
 # Eventual return code
 failed_tests=0
@@ -16,9 +19,12 @@ for module in $module_list
 do
     columns=$(tput cols)
     header="****************************************"
-    printf "%*s\n" $(((${#header}+$columns)/2)) "$header" | tee -a "$result_file"
-    printf "%*s\n" $(((${#module}+$columns)/2)) "$module" | tee -a "$result_file"
-    printf "%*s\n" $(((${#header}+$columns)/2)) "$header" | tee -a "$result_file"
+    printf "%*s\n" $(((${#header}+$columns)/2)) "$header"
+    printf "%*s\n" $(((${#module}+$columns)/2)) "$module"
+    printf "%*s\n" $(((${#header}+$columns)/2)) "$header"
+
+    echo "$header" >> "$result_file"
+    echo "$module" >> "$result_file"
 
     cd "$this_dir" || exit 1
 
