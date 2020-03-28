@@ -1,0 +1,153 @@
+language: cpp
+dist: bionic
+
+git:
+  depth: 5
+
+# Use jobs rather than matrix since we are precisely specifiying test cases.
+# Do not move any of the keys (env, os, arch, compiler, etc) into global.
+# Placing them in global invokes matrix expansion, which we don't want.
+jobs:
+  include:
+    # AMD64
+    - name: Standard, GCC, Ubuntu Bionic (Amd64)
+      os: linux
+      arch: amd64
+      dist: bionic
+      compiler: gcc
+    - name: Standard, Clang, Ubuntu Bionic (Amd64)
+      os: linux
+      arch: amd64
+      dist: bionic
+      compiler: clang
+
+    # ARM64
+    - name: Standard, GCC, Ubuntu Bionic (Aarch64)
+      os: linux
+      arch: aarch64
+      dist: bionic
+      compiler: gcc
+    - name: Standard, Clang, Ubuntu Bionic (Aarch64)
+      os: linux
+      arch: aarch64
+      dist: bionic
+      compiler: clang
+
+    # PPC64
+    - name: Standard, GCC, Ubuntu Bionic (PPC64)
+      os: linux
+      arch: ppc64le
+      dist: bionic
+      compiler: gcc
+    - name: Standard, Clang, Ubuntu Bionic (PPC64)
+      os: linux
+      arch: ppc64le
+      dist: bionic
+      compiler: clang
+      env:
+      - CC=clang-8
+      - CC=clang++-8
+
+    # s390x
+    - name: Standard, GCC, Ubuntu Bionic (s390x)
+      os: linux
+      arch: s390x
+      dist: bionic
+      compiler: gcc
+    - name: Standard, Clang, Ubuntu Bionic (s390x)
+      os: linux
+      arch: s390x
+      dist: bionic
+      compiler: clang
+      env:
+      - CC=clang-8
+      - CC=clang++-8
+
+    # Older OS
+    - name: Standard, GCC, Ubuntu Trusty (Amd64)
+      os: linux
+      arch: amd64
+      dist: trusty
+      compiler: gcc
+    - name: Standard, Clang, Ubuntu Trusty (Amd64)
+      os: linux
+      arch: amd64
+      dist: trusty
+      compiler: clang
+
+    # New and old OS X
+    - name: Standard, Clang, OS X 10.10 (Amd64)
+      os: osx
+      arch: amd64
+      osx_image: xcode11.3
+      compiler: clang
+    - name: Standard, Clang, OS X 10.14 (Amd64)
+      os: osx
+      arch: amd64
+      osx_image: xcode6.4
+      compiler: clang
+
+    # UBsan
+    - name: UBsan, GCC, Ubuntu Bionic (Amd64)
+      os: linux
+      arch: amd64
+      dist: bionic
+      compiler: gcc
+      env:
+      - CFLAGS="-fanitize=undefined"
+      - CXXFLAGS="-fanitize=undefined"
+      - LDFLAGS="-fanitize=undefined"
+    - name: UBsan, Clang, Ubuntu Bionic (Amd64)
+      os: linux
+      arch: amd64
+      dist: bionic
+      compiler: clang
+      env:
+      - CFLAGS="-fanitize=undefined"
+      - CXXFLAGS="-fanitize=undefined"
+      - LDFLAGS="-fanitize=undefined"
+
+    # Asan
+    - name: Asan, GCC, Ubuntu Bionic (Amd64)
+      os: linux
+      arch: amd64
+      dist: bionic
+      compiler: gcc
+      env:
+      - CFLAGS="-fanitize=address"
+      - CXXFLAGS="-fanitize=address"
+      - LDFLAGS="-fanitize=address"
+    - name: Asan, Clang, Ubuntu Bionic (Amd64)
+      os: linux
+      arch: amd64
+      dist: bionic
+      compiler: clang
+      env:
+      - CFLAGS="-fanitize=address"
+      - CXXFLAGS="-fanitize=address"
+      - LDFLAGS="-fanitize=address"
+
+  allow_failure:
+    - name: Asan, GCC, Ubuntu Bionic (Amd64)
+    - name: Asan, Clang, Ubuntu Bionic (Amd64)
+
+before_script:
+  - cp ci_tests/install_tools.sh .
+  - bash install_tools.sh
+
+script:
+  - cp ci_tests/test_modules.sh .
+  - bash test_modules.sh
+
+# Whitelist branches to avoid testing feature branches twice
+branches:
+  only:
+    - master
+    - /\/ci$/
+
+notifications:
+  email:
+    recipients:
+      - gnulib-build@googlegroups.com
+    on_success: always # default: change
+    on_failure: always # default: always
