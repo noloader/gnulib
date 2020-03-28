@@ -35,6 +35,7 @@ do
     then
         echo "Failed to configure $module" | tee -a "$result_file"
         failed_tests=$((failed_tests+1))
+        cat config.log
         continue
     fi
 

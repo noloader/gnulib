@@ -87,6 +87,46 @@ jobs:
       osx_image: xcode6.4
       compiler: clang
 
+    # Debug
+    - name: Debug, GCC, Ubuntu Bionic (Amd64)
+      os: linux
+      arch: amd64
+      dist: bionic
+      compiler: gcc
+      env:
+      - CPPFLAGS="-DDEBUG"
+      - CFLAGS="-g3 -O0"
+      - CXXFLAGS="-g3 -O0"
+    - name: Debug, Clang, Ubuntu Bionic (Amd64)
+      os: linux
+      arch: amd64
+      dist: bionic
+      compiler: clang
+      env:
+      - CPPFLAGS="-DDEBUG"
+      - CFLAGS="-g3 -O0"
+      - CXXFLAGS="-g3 -O0"
+
+    # Release
+    - name: Release, GCC, Ubuntu Bionic (Amd64)
+      os: linux
+      arch: amd64
+      dist: bionic
+      compiler: gcc
+      env:
+      - CPPFLAGS="-DNDEBUG"
+      - CFLAGS="-g2 -O3"
+      - CXXFLAGS="-g2 -O3"
+    - name: Release, Clang, Ubuntu Bionic (Amd64)
+      os: linux
+      arch: amd64
+      dist: bionic
+      compiler: clang
+      env:
+      - CPPFLAGS="-DNDEBUG"
+      - CFLAGS="-g2 -O3"
+      - CXXFLAGS="-g2 -O3"
+
     # UBsan
     - name: UBsan, GCC, Ubuntu Bionic (Amd64)
       os: linux
