@@ -19,7 +19,6 @@ task:
         - cp ci_tests/test_modules.sh .
         - bash test_modules.sh
         - echo "-----"; cat result.txt
-
     - name: Standard, Clang, FreeBSD 12.1
       freebsd_instance:
         image_family: freebsd-12-1
@@ -35,7 +34,6 @@ task:
         - cp ci_tests/test_modules.sh .
         - bash test_modules.sh
         - echo "-----"; cat result.txt
-
     - name: Standard, GCC, FreeBSD 13.0 (snap)
       freebsd_instance:
         image_family: freebsd-13-0-snap
