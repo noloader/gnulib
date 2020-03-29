@@ -11,7 +11,7 @@ task:
         image_family: freebsd-12-1
       pkginstall_script:
         - pkg update -f
-        - pkg install -y bash gmake gcc autoconf automake autopoint libtool pkg-config
+        - pkg install -y bash gmake gcc autoconf automake libtool pkg-config
       configure_script:
       compile_script:
       test_script:
@@ -23,7 +23,7 @@ task:
         image_family: freebsd-12-1
       pkginstall_script:
         - pkg update -f
-        - pkg install -y bash gmake llvm80 autoconf automake autopoint libtool pkg-config
+        - pkg install -y bash gmake llvm80 autoconf automake libtool pkg-config
       configure_script:
       compile_script:
       test_script:
@@ -37,7 +37,7 @@ task:
         image_family: freebsd-13-0-snap
       pkginstall_script:
         - pkg update -f
-        - pkg install -y bash gmake gcc autoconf automake autopoint libtool pkg-config
+        - pkg install -y bash gmake gcc autoconf automake libtool pkg-config
       configure_script:
       compile_script:
       test_script:
@@ -49,7 +49,7 @@ task:
         image_family: freebsd-13-0-snap
       pkginstall_script:
         - pkg update -f
-        - pkg install -y bash gmake llvm90 autoconf automake autopoint libtool pkg-config
+        - pkg install -y bash gmake llvm90 autoconf automake libtool pkg-config
       configure_script:
       compile_script:
       test_script:
