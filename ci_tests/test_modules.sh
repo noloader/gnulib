@@ -27,7 +27,7 @@ for module in $module_list
 do
     header="****************************************"
     printf "%s\n" "${header}" | tee -a "$result_file"
-    printf "%s\n" "${module}" | tee -a "$result_file"
+    printf "%s\n" "Testing ${module}" | tee -a "$result_file"
 
     cd "$this_dir" || exit 1
 
