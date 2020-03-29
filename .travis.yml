@@ -177,6 +177,8 @@ jobs:
       - LDFLAGS="-fsanitize=address"
 
   allow_failures:
+    # https://bugs.llvm.org/show_bug.cgi?id=45352
+    - name: UBsan, Clang, Ubuntu Bionic (Amd64)
     - name: Asan, GCC, Ubuntu Bionic (Amd64)
     - name: Asan, Clang, Ubuntu Bionic (Amd64)
 
