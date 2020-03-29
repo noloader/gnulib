@@ -27,8 +27,8 @@ task:
       configure_script:
       compile_script:
       test_script:
-        - export CC=clang
-        - export CXX=clang++
+        - export CC=/usr/local/bin/clang80
+        - export CXX=/usr/local/bin/clang++80
         - cp ci_tests/test_modules.sh .
         - bash test_modules.sh
         - echo "-----"; cat result.txt
@@ -53,8 +53,8 @@ task:
       configure_script:
       compile_script:
       test_script:
-        - export CC=clang
-        - export CXX=clang++
+        - export CC=/usr/local/bin/clang90
+        - export CXX=/usr/local/bin/clang++90
         - cp ci_tests/test_modules.sh .
         - bash test_modules.sh
         - echo "-----"; cat result.txt
