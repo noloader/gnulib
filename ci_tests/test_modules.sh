@@ -63,15 +63,6 @@ do
         continue
     fi
 
-    # Search for errors hidden in log files
-    count=$(find . -name '*.log' ! -name 'config.log' -exec grep -o 'runtime error:' {} \; | wc -l)
-    if [[ "${count}" -ne 0 ]];
-    then
-        printf "%s\n" "Failed to test $module (ubsan)" | tee -a "$result_file"
-        failed_tests=$((failed_tests+1))
-        continue
-    fi
-
     printf "%s\n" "Tested $module OK" | tee -a "$result_file"
 done
 

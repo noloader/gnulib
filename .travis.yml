@@ -143,18 +143,18 @@ jobs:
       dist: bionic
       compiler: gcc
       env:
-      - CFLAGS="-fsanitize=undefined"
-      - CXXFLAGS="-fsanitize=undefined"
-      - LDFLAGS="-fsanitize=undefined"
+      - CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+      - CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+      - LDFLAGS="-fsanitize=undefined -fno-sanitize-recover"
     - name: UBsan, Clang, Ubuntu Bionic (Amd64)
       os: linux
       arch: amd64
       dist: bionic
       compiler: clang
       env:
-      - CFLAGS="-fsanitize=undefined"
-      - CXXFLAGS="-fsanitize=undefined"
-      - LDFLAGS="-fsanitize=undefined"
+      - CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+      - CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+      - LDFLAGS="-fsanitize=undefined -fno-sanitize-recover"
 
     # Asan
     - name: Asan, GCC, Ubuntu Bionic (Amd64)
