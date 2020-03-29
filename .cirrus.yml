@@ -9,7 +9,6 @@ task:
     - name: Standard, GCC, FreeBSD 12.1
       freebsd_instance:
         image_family: freebsd-12-1
-      env:
       pkginstall_script:
         - pkg update -f
         - pkg install -y bash gmake gcc autoconf automake autopoint libtool pkg-config
@@ -37,7 +36,6 @@ task:
     - name: Standard, GCC, FreeBSD 13.0 (snap)
       freebsd_instance:
         image_family: freebsd-13-0-snap
-      env:
       pkginstall_script:
         - pkg update -f
         - pkg install -y bash gmake gcc autoconf automake autopoint libtool pkg-config
