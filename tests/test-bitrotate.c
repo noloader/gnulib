@@ -15,6 +15,7 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Simon Josefsson <simon@josefsson.org>, 2008.  */
+/* Updated for 128-bit types by Jeffrey Walton <noloader@gmail.com>, 2020 */
 
 #include <config.h>
 
@@ -81,6 +82,7 @@ main (void)
   ASSERT (rotr16 (43981, 15) == 22427);
   ASSERT (rotr16 (43981, 16) == 43981);
 
+  ASSERT (rotl32 (2309737967U, 0) == 2309737967U);
   ASSERT (rotl32 (2309737967U, 1) == 324508639U);
   ASSERT (rotl32 (2309737967U, 2) == 649017278U);
   ASSERT (rotl32 (2309737967U, 3) == 1298034556U);
@@ -113,6 +115,7 @@ main (void)
   ASSERT (rotl32 (2309737967U, 30) == 3798659963U);
   ASSERT (rotl32 (2309737967U, 31) == 3302352631U);
 
+  ASSERT (rotr32 (2309737967U, 0) == 2309737967U);
   ASSERT (rotr32 (2309737967U, 1) == 3302352631lU);
   ASSERT (rotr32 (2309737967U, 2) == 3798659963lU);
   ASSERT (rotr32 (2309737967U, 3) == 4046813629lU);
@@ -146,6 +149,7 @@ main (void)
   ASSERT (rotr32 (2309737967U, 31) == 324508639lU);
 
 #ifdef UINT64_MAX
+  ASSERT (rotl64 (16045690984503098046ULL, 0) == 16045690984503098046ULL);
   ASSERT (rotl64 (16045690984503098046ULL, 1) == 13644637895296644477ULL);
   ASSERT (rotl64 (16045690984503098046ULL, 2) == 8842531716883737339ULL);
   ASSERT (rotl64 (16045690984503098046ULL, 3) == 17685063433767474678ULL);
@@ -210,6 +214,7 @@ main (void)
   ASSERT (rotl64 (16045690984503098046ULL, 62) == 13234794782980550319ULL);
   ASSERT (rotl64 (16045690984503098046ULL, 63) == 8022845492251549023ULL);
 
+  ASSERT (rotr64 (16045690984503098046ULL, 0) == 16045690984503098046ULL);
   ASSERT (rotr64 (16045690984503098046ULL, 1) == 8022845492251549023ULL);
   ASSERT (rotr64 (16045690984503098046ULL, 2) == 13234794782980550319ULL);
   ASSERT (rotr64 (16045690984503098046ULL, 3) == 15840769428345050967ULL);
@@ -274,6 +279,28 @@ main (void)
   ASSERT (rotr64 (16045690984503098046ULL, 62) == 8842531716883737339ULL);
   ASSERT (rotr64 (16045690984503098046ULL, 63) == 13644637895296644477ULL);
 #endif /* UINT64_MAX */
+
+  /* Hack ahead because GCC does not provide a way to initialize uint128_t */
+  /* https://gcc.gnu.org/onlinedocs/gcc/_005f_005fint128.html              */
+  #if __SIZEOF_INT128__ >= 16
+  {
+    const __uint128_t v  = (((__uint128_t)(0xffffffffffffffffULL)) << 64) | 0x00ffffffffffff00ULL;
+    const __uint128_t xl = v;
+    const __uint128_t xr = v;
+
+    ASSERT (rotl128 (v, 0) == xl);
+    ASSERT (rotr128 (v, 0) == xr);
+  }
+
+  {
+    const __uint128_t v  = (((__uint128_t)(0xffffffffffffffffULL)) << 64) | 0x00ffffffffffff00ULL;
+    const __uint128_t xl = (((__uint128_t)(0xffffffffffffff00ULL)) << 64) | 0xffffffffffff00ffULL;
+    const __uint128_t xr = (((__uint128_t)(0x00ffffffffffffffULL)) << 64) | 0xff00ffffffffffffULL;
+
+    ASSERT (rotl128 (v, 8) == xl);
+    ASSERT (rotr128 (v, 8) == xr);
+  }
+  #endif
 
   return 0;
 }
