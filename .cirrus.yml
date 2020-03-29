@@ -6,24 +6,58 @@ env:
 
 task:
   matrix:
-    - name: Standard, FreeBSD 12.1
+    - name: Standard, GCC, FreeBSD 12.1
       freebsd_instance:
         image_family: freebsd-12-1
+      env:
       pkginstall_script:
         - pkg update -f
-        - pkg install -y bash gmake clang gcc autoconf automake autopoint libtool pkg-config
+        - pkg install -y bash gmake gcc autoconf automake autopoint libtool pkg-config
       configure_script:
       compile_script:
       test_script:
         - cp ci_tests/test_modules.sh .
         - bash test_modules.sh
         - echo "-----"; cat result.txt
-    - name: Standard, FreeBSD 13.0 (snap)
+
+    - name: Standard, Clang, FreeBSD 12.1
       freebsd_instance:
-        image_family: freebsd-13-0-snap
+        image_family: freebsd-12-1
+      env:
+        - CC=clang
+        - CXX=clang++
       pkginstall_script:
         - pkg update -f
-        - pkg install -y bash gmake clang gcc autoconf automake autopoint libtool pkg-config
+        - pkg install -y bash gmake llvm80 autoconf automake autopoint libtool pkg-config
+      configure_script:
+      compile_script:
+      test_script:
+        - cp ci_tests/test_modules.sh .
+        - bash test_modules.sh
+        - echo "-----"; cat result.txt
+
+    - name: Standard, GCC, FreeBSD 13.0 (snap)
+      freebsd_instance:
+        image_family: freebsd-13-0-snap
+      env:
+      pkginstall_script:
+        - pkg update -f
+        - pkg install -y bash gmake gcc autoconf automake autopoint libtool pkg-config
+      configure_script:
+      compile_script:
+      test_script:
+        - cp ci_tests/test_modules.sh .
+        - bash test_modules.sh
+        - echo "-----"; cat result.txt
+    - name: Standard, Clang, FreeBSD 13.0 (snap)
+      freebsd_instance:
+        image_family: freebsd-13-0-snap
+      env:
+        - CC=clang
+        - CXX=clang++
+      pkginstall_script:
+        - pkg update -f
+        - pkg install -y bash gmake llvm90 autoconf automake autopoint libtool pkg-config
       configure_script:
       compile_script:
       test_script:
