@@ -21,15 +21,14 @@ task:
     - name: Standard, Clang, FreeBSD 12.1
       freebsd_instance:
         image_family: freebsd-12-1
-      env:
-        - CC=clang
-        - CXX=clang++
       pkginstall_script:
         - pkg update -f
         - pkg install -y bash gmake llvm80 autoconf automake autopoint libtool pkg-config
       configure_script:
       compile_script:
       test_script:
+        - export CC=clang
+        - export CXX=clang++
         - cp ci_tests/test_modules.sh .
         - bash test_modules.sh
         - echo "-----"; cat result.txt
@@ -48,15 +47,14 @@ task:
     - name: Standard, Clang, FreeBSD 13.0 (snap)
       freebsd_instance:
         image_family: freebsd-13-0-snap
-      env:
-        - CC=clang
-        - CXX=clang++
       pkginstall_script:
         - pkg update -f
         - pkg install -y bash gmake llvm90 autoconf automake autopoint libtool pkg-config
       configure_script:
       compile_script:
       test_script:
+        - export CC=clang
+        - export CXX=clang++
         - cp ci_tests/test_modules.sh .
         - bash test_modules.sh
         - echo "-----"; cat result.txt
