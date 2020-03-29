@@ -1,0 +1,32 @@
+# https://cirrus-ci.org/examples/
+# https://github.com/curl/curl/blob/master/.cirrus.yml
+
+env:
+  CIRRUS_CLONE_DEPTH: 5
+
+task:
+  matrix:
+    - name: Standard, FreeBSD 12.1
+      freebsd_instance:
+        image_family: freebsd-12-1
+      pkginstall_script:
+        - pkg update -f
+        - pkg install -y bash gmake clang gcc autoconf automake autopoint libtool pkg-config
+      configure_script:
+      compile_script:
+      test_script:
+        - cp ci_tests/test_modules.sh .
+        - bash test_modules.sh
+        - echo "-----"; cat result.txt
+    - name: Standard, FreeBSD 13.0 (snap)
+      freebsd_instance:
+        image_family: freebsd-13-0-snap
+      pkginstall_script:
+        - pkg update -f
+        - pkg install -y bash gmake clang gcc autoconf automake autopoint libtool pkg-config
+      configure_script:
+      compile_script:
+      test_script:
+        - cp ci_tests/test_modules.sh .
+        - bash test_modules.sh
+        - echo "-----"; cat result.txt

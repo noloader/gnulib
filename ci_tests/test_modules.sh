@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 this_dir=$(pwd)
-test_dir=$(dirname $(pwd))/gnulib_test
+test_dir=$(dirname "$(pwd)")/gnulib_test
 
 rm -rf "$test_dir"
 mkdir -p "$test_dir"
@@ -15,16 +15,18 @@ module_list=$(find modules -name '*tests' | sed -e 's|^modules/||g' -e 's|-tests
 # Eventual return code
 failed_tests=0
 
+# For BSD testing on Cirrus CI
+if [ -n "$(command -v gmake)" ]; then
+    MAKE=$(command -v gmake)
+else
+    MAKE=make
+fi
+
 for module in $module_list
 do
-    columns=$(tput cols)
     header="****************************************"
-    printf "%*s\n" $(((${#header}+$columns)/2)) "$header"
-    printf "%*s\n" $(((${#module}+$columns)/2)) "$module"
-    printf "%*s\n" $(((${#header}+$columns)/2)) "$header"
-
-    echo "$header" >> "$result_file"
-    echo "$module" >> "$result_file"
+    printf "%*s\n" "$header" | tee -a "$result_file"
+    printf "%*s\n" "$module" | tee -a "$result_file"
 
     cd "$this_dir" || exit 1
 
@@ -46,14 +48,14 @@ do
     fi
 
     # Travis offers two cores
-    if ! make -j 3;
+    if ! ${MAKE} -j 3;
     then
         echo "Failed to make $module" | tee -a "$result_file"
         failed_tests=$((failed_tests+1))
         continue
     fi
 
-    if ! make check;
+    if ! ${MAKE} check;
     then
         echo "Failed to test $module" | tee -a "$result_file"
         failed_tests=$((failed_tests+1))

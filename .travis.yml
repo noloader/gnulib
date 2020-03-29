@@ -143,18 +143,18 @@ jobs:
       dist: bionic
       compiler: gcc
       env:
-      - CFLAGS="-fanitize=undefined"
-      - CXXFLAGS="-fanitize=undefined"
-      - LDFLAGS="-fanitize=undefined"
+      - CFLAGS="-fsanitize=undefined"
+      - CXXFLAGS="-fsanitize=undefined"
+      - LDFLAGS="-fsanitize=undefined"
     - name: UBsan, Clang, Ubuntu Bionic (Amd64)
       os: linux
       arch: amd64
       dist: bionic
       compiler: clang
       env:
-      - CFLAGS="-fanitize=undefined"
-      - CXXFLAGS="-fanitize=undefined"
-      - LDFLAGS="-fanitize=undefined"
+      - CFLAGS="-fsanitize=undefined"
+      - CXXFLAGS="-fsanitize=undefined"
+      - LDFLAGS="-fsanitize=undefined"
 
     # Asan
     - name: Asan, GCC, Ubuntu Bionic (Amd64)
@@ -163,18 +163,18 @@ jobs:
       dist: bionic
       compiler: gcc
       env:
-      - CFLAGS="-fanitize=address"
-      - CXXFLAGS="-fanitize=address"
-      - LDFLAGS="-fanitize=address"
+      - CFLAGS="-fsanitize=address"
+      - CXXFLAGS="-fsanitize=address"
+      - LDFLAGS="-fsanitize=address"
     - name: Asan, Clang, Ubuntu Bionic (Amd64)
       os: linux
       arch: amd64
       dist: bionic
       compiler: clang
       env:
-      - CFLAGS="-fanitize=address"
-      - CXXFLAGS="-fanitize=address"
-      - LDFLAGS="-fanitize=address"
+      - CFLAGS="-fsanitize=address"
+      - CXXFLAGS="-fsanitize=address"
+      - LDFLAGS="-fsanitize=address"
 
   allow_failures:
     - name: Asan, GCC, Ubuntu Bionic (Amd64)
