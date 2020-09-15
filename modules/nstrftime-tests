@@ -3,6 +3,9 @@ tests/test-nstrftime.c
 tests/macros.h
 
 Depends-on:
+atoll
+c99
+intprops
 strerror
 
 configure.ac:

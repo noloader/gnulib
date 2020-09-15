@@ -22,31 +22,14 @@
 
 # include <stdlib.h>
 
-#ifndef __GNUC_PREREQ
-# if defined __GNUC__ && defined __GNUC_MINOR__
-#  define __GNUC_PREREQ(maj, min)                                       \
-  ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
-# else
-#  define __GNUC_PREREQ(maj, min) 0
-# endif
-#endif
-
-# ifndef _GL_ATTRIBUTE_RETURN_CHECK
-#  if __GNUC_PREREQ (3, 4)
-#   define _GL_ATTRIBUTE_RETURN_CHECK __attribute__((__warn_unused_result__))
-#  else
-#   define _GL_ATTRIBUTE_RETURN_CHECK
-#  endif
-# endif
-
 /* Don't call these directly - use the macros below */
 int
 safe_alloc_alloc_n (void *ptrptr, size_t size, size_t count, int zeroed)
-  _GL_ATTRIBUTE_RETURN_CHECK;
+  _GL_ATTRIBUTE_NODISCARD;
 
 int
 safe_alloc_realloc_n (void *ptrptr, size_t size, size_t count)
-  _GL_ATTRIBUTE_RETURN_CHECK;
+  _GL_ATTRIBUTE_NODISCARD;
 
 /**
  * ALLOC:

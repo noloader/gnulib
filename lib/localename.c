@@ -28,6 +28,7 @@
 #endif
 
 #include <limits.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <locale.h>
@@ -35,6 +36,7 @@
 
 #include "flexmember.h"
 #include "setlocale_null.h"
+#include "thread-optim.h"
 
 /* We cannot support uselocale() on platforms where the locale_t type is fake.
    See intl-thread-locale.m4 for details.  */
@@ -1150,6 +1152,11 @@ extern char * getlocalename_l(int, locale_t);
 # ifndef LOCALE_NAME_MAX_LENGTH
 # define LOCALE_NAME_MAX_LENGTH 85
 # endif
+/* Don't assume that UNICODE is not defined.  */
+# undef GetLocaleInfo
+# define GetLocaleInfo GetLocaleInfoA
+# undef EnumSystemLocales
+# define EnumSystemLocales EnumSystemLocalesA
 #endif
 
 /* We want to use the system's setlocale() function here, not the gnulib
@@ -2564,7 +2571,7 @@ static char lname[LC_MAX * (LOCALE_NAME_MAX_LENGTH + 1) + 1];
 
 /* Callback function for EnumLocales.  */
 static BOOL CALLBACK
-enum_locales_fn (LPTSTR locale_num_str)
+enum_locales_fn (LPSTR locale_num_str)
 {
   char *endp;
   char locval[2 * LOCALE_NAME_MAX_LENGTH + 1 + 1];
@@ -2692,24 +2699,27 @@ struniq (const char *string)
     /* Out of memory.  Return a statically allocated string.  */
     return "C";
   memcpy (new_node->contents, string, size);
-  /* Lock while inserting new_node.  */
-  gl_lock_lock (struniq_lock);
-  /* Check whether another thread already added the string while we were
-     waiting on the lock.  */
-  for (p = struniq_hash_table[slot]; p != NULL; p = p->next)
-    if (strcmp (p->contents, string) == 0)
-      {
-        free (new_node);
-        new_node = p;
-        goto done;
-      }
-  /* Really insert new_node into the hash table.  Fill new_node entirely first,
-     because other threads may be iterating over the linked list.  */
-  new_node->next = struniq_hash_table[slot];
-  struniq_hash_table[slot] = new_node;
- done:
-  /* Unlock after new_node is inserted.  */
-  gl_lock_unlock (struniq_lock);
+  {
+    bool mt = gl_multithreaded ();
+    /* Lock while inserting new_node.  */
+    if (mt) gl_lock_lock (struniq_lock);
+    /* Check whether another thread already added the string while we were
+       waiting on the lock.  */
+    for (p = struniq_hash_table[slot]; p != NULL; p = p->next)
+      if (strcmp (p->contents, string) == 0)
+        {
+          free (new_node);
+          new_node = p;
+          goto done;
+        }
+    /* Really insert new_node into the hash table.  Fill new_node entirely
+       first, because other threads may be iterating over the linked list.  */
+    new_node->next = struniq_hash_table[slot];
+    struniq_hash_table[slot] = new_node;
+   done:
+    /* Unlock after new_node is inserted.  */
+    if (mt) gl_lock_unlock (struniq_lock);
+  }
   return new_node->contents;
 }
 

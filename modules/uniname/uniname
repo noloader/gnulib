@@ -8,7 +8,9 @@ lib/uniname/uniname.c
 
 Depends-on:
 uniname/base
+attribute
 memcmp
+c99
 
 configure.ac:
 gl_LIBUNISTRING_MODULE([0.9.8], [uniname/uniname])

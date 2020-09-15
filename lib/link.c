@@ -30,13 +30,21 @@
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 
+/* Don't assume that UNICODE is not defined.  */
+#  undef GetModuleHandle
+#  define GetModuleHandle GetModuleHandleA
+#  undef CreateHardLink
+#  define CreateHardLink CreateHardLinkA
+
+#  if !(_WIN32_WINNT >= _WIN32_WINNT_WINXP)
+
 /* Avoid warnings from gcc -Wcast-function-type.  */
-#  define GetProcAddress \
-    (void *) GetProcAddress
+#   define GetProcAddress \
+     (void *) GetProcAddress
 
 /* CreateHardLink was introduced only in Windows 2000.  */
-typedef BOOL (WINAPI * CreateHardLinkFuncType) (LPCTSTR lpFileName,
-                                                LPCTSTR lpExistingFileName,
+typedef BOOL (WINAPI * CreateHardLinkFuncType) (LPCSTR lpFileName,
+                                                LPCSTR lpExistingFileName,
                                                 LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 static CreateHardLinkFuncType CreateHardLinkFunc = NULL;
 static BOOL initialized = FALSE;
@@ -53,14 +61,24 @@ initialize (void)
   initialized = TRUE;
 }
 
+#  else
+
+#   define CreateHardLinkFunc CreateHardLink
+
+#  endif
+
 int
 link (const char *file1, const char *file2)
 {
   char *dir;
   size_t len1 = strlen (file1);
   size_t len2 = strlen (file2);
+
+#  if !(_WIN32_WINNT >= _WIN32_WINNT_WINXP)
   if (!initialized)
     initialize ();
+#  endif
+
   if (CreateHardLinkFunc == NULL)
     {
       /* System does not support hard links.  */

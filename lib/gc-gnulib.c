@@ -89,6 +89,12 @@ HCRYPTPROV g_hProv = 0;
 # endif
 #endif
 
+#if defined _WIN32 && ! defined __CYGWIN__
+/* Don't assume that UNICODE is not defined.  */
+# undef CryptAcquireContext
+# define CryptAcquireContext CryptAcquireContextA
+#endif
+
 Gc_rc
 gc_init (void)
 {
@@ -167,7 +173,7 @@ randomize (int level, char *data, size_t datalen)
   if (strcmp (device, "no") == 0)
     return GC_RANDOM_ERROR;
 
-  fd = open (device, O_RDONLY);
+  fd = open (device, O_RDONLY | O_CLOEXEC);
   if (fd < 0)
     return GC_RANDOM_ERROR;
 

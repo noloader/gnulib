@@ -17,6 +17,9 @@ $TEXINFOTEX texinfo.tex		build-aux strip-trailing-space
 # we generate INSTALL from this via a rule in doc/Makefile.
 $AUTOCONF doc/install.texi	doc
 
+$GMP mini-gmp/mini-gmp.c	lib
+$GMP mini-gmp/mini-gmp.h	lib
+
 $GNUSTANDARDS maintain.texi	doc strip-trailing-space
 $GNUSTANDARDS standards.texi	doc strip-trailing-space
 $GNUSTANDARDS make-stds.texi	doc
@@ -50,13 +53,12 @@ $LIBCSRC include/scratch_buffer.h	lib/malloc
 $LIBCSRC malloc/scratch_buffer_grow.c	lib/malloc
 $LIBCSRC malloc/scratch_buffer_grow_preserve.c	lib/malloc
 $LIBCSRC malloc/scratch_buffer_set_array_size.c	lib/malloc
-# Temporarily newer in Gnulib than in glibc.
 #$LIBCSRC include/intprops.h             lib
-$LIBCSRC posix/regcomp.c		lib
-#$LIBCSRC posix/regex.c			lib
-$LIBCSRC posix/regex.h			lib
+#$LIBCSRC posix/regcomp.c		lib
+$LIBCSRC posix/regex.c			lib
+#$LIBCSRC posix/regex.h			lib
 $LIBCSRC posix/regex_internal.c		lib
-#$LIBCSRC posix/regex_internal.h	lib
+#$LIBCSRC posix/regex_internal.h		lib
 $LIBCSRC posix/regexec.c		lib
 $LIBCSRC time/timegm.c			lib
 #$LIBCSRC time/mktime.c			lib

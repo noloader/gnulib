@@ -125,7 +125,7 @@
 
 #ifdef MOUNTED_GETMNTENT1
 # if !HAVE_SETMNTENT            /* Android <= 4.4 */
-#  define setmntent(fp,mode) fopen (fp, mode)
+#  define setmntent(fp,mode) fopen (fp, mode "e")
 # endif
 # if !HAVE_ENDMNTENT            /* Android <= 4.4 */
 #  define endmntent(fp) fclose (fp)
@@ -195,6 +195,9 @@
 
 #ifdef __CYGWIN__
 # include <windows.h>
+/* Don't assume that UNICODE is not defined.  */
+# undef GetDriveType
+# define GetDriveType GetDriveTypeA
 # define ME_REMOTE me_remote
 /* All cygwin mount points include ':' or start with '//'; so it
    requires a native Windows call to determine remote disks.  */
@@ -460,7 +463,7 @@ read_file_system_list (bool need_fs_type)
        (and that code is in previous versions of this function), however
        libmount depends on libselinux which pulls in many dependencies.  */
     char const *mountinfo = "/proc/self/mountinfo";
-    fp = fopen (mountinfo, "r");
+    fp = fopen (mountinfo, "re");
     if (fp != NULL)
       {
         char *line = NULL;
@@ -794,7 +797,7 @@ read_file_system_list (bool need_fs_type)
     char *table = "/etc/mnttab";
     FILE *fp;
 
-    fp = fopen (table, "r");
+    fp = fopen (table, "re");
     if (fp == NULL)
       return NULL;
 
@@ -852,7 +855,7 @@ read_file_system_list (bool need_fs_type)
        by the kernel.  */
 
     errno = 0;
-    fp = fopen (table, "r");
+    fp = fopen (table, "re");
     if (fp == NULL)
       ret = errno;
     else
@@ -902,7 +905,7 @@ read_file_system_list (bool need_fs_type)
 #  ifndef MNTTAB_LOCK
 #   define MNTTAB_LOCK "/etc/.mnttab.lock"
 #  endif
-    lockfd = open (MNTTAB_LOCK, O_RDONLY);
+    lockfd = open (MNTTAB_LOCK, O_RDONLY | O_CLOEXEC);
     if (0 <= lockfd)
       {
         struct flock flock;
@@ -924,7 +927,7 @@ read_file_system_list (bool need_fs_type)
 # endif
 
     errno = 0;
-    fp = fopen (table, "r");
+    fp = fopen (table, "re");
     if (fp == NULL)
       ret = errno;
     else

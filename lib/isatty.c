@@ -39,9 +39,17 @@
 # include <io.h>
 #endif
 
+/* Don't assume that UNICODE is not defined.  */
+#undef LoadLibrary
+#define LoadLibrary LoadLibraryA
+#undef QueryFullProcessImageName
+#define QueryFullProcessImageName QueryFullProcessImageNameA
+
+#if !(_WIN32_WINNT >= _WIN32_WINNT_VISTA)
+
 /* Avoid warnings from gcc -Wcast-function-type.  */
-#define GetProcAddress \
-  (void *) GetProcAddress
+# define GetProcAddress \
+   (void *) GetProcAddress
 
 /* GetNamedPipeClientProcessId was introduced only in Windows Vista.  */
 typedef BOOL (WINAPI * GetNamedPipeClientProcessIdFuncType) (HANDLE hPipe,
@@ -69,6 +77,13 @@ initialize (void)
   initialized = TRUE;
 }
 
+#else
+
+# define GetNamedPipeClientProcessIdFunc GetNamedPipeClientProcessId
+# define QueryFullProcessImageNameFunc QueryFullProcessImageName
+
+#endif
+
 static BOOL IsConsoleHandle (HANDLE h)
 {
   DWORD mode;
@@ -84,8 +99,10 @@ static BOOL IsCygwinConsoleHandle (HANDLE h)
   BOOL result = FALSE;
   ULONG processId;
 
+#if !(_WIN32_WINNT >= _WIN32_WINNT_VISTA)
   if (!initialized)
     initialize ();
+#endif
 
   /* GetNamedPipeClientProcessId
      <https://docs.microsoft.com/en-us/windows/desktop/api/winbase/nf-winbase-getnamedpipeclientprocessid>

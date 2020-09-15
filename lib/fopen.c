@@ -19,12 +19,12 @@
 /* If the user's config.h happens to include <stdio.h>, let it include only
    the system's <stdio.h> here, so that orig_fopen doesn't recurse to
    rpl_fopen.  */
-#define __need_FILE
+#define _GL_ALREADY_INCLUDING_STDIO_H
 #include <config.h>
 
 /* Get the original definition of fopen.  It might be defined as a macro.  */
 #include <stdio.h>
-#undef __need_FILE
+#undef _GL_ALREADY_INCLUDING_STDIO_H
 
 static FILE *
 orig_fopen (const char *filename, const char *mode)
@@ -39,6 +39,7 @@ orig_fopen (const char *filename, const char *mode)
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -47,10 +48,105 @@ orig_fopen (const char *filename, const char *mode)
 FILE *
 rpl_fopen (const char *filename, const char *mode)
 {
+  int open_direction;
+  int open_flags;
+#if GNULIB_FOPEN_GNU
+  bool open_flags_gnu;
+# define BUF_SIZE 80
+  char fdopen_mode_buf[BUF_SIZE + 1];
+#endif
+
 #if defined _WIN32 && ! defined __CYGWIN__
   if (strcmp (filename, "/dev/null") == 0)
     filename = "NUL";
 #endif
+
+  /* Parse the mode.  */
+  open_direction = 0;
+  open_flags = 0;
+#if GNULIB_FOPEN_GNU
+  open_flags_gnu = false;
+#endif
+  {
+    const char *p = mode;
+#if GNULIB_FOPEN_GNU
+    char *q = fdopen_mode_buf;
+#endif
+
+    for (; *p != '\0'; p++)
+      {
+        switch (*p)
+          {
+          case 'r':
+            open_direction = O_RDONLY;
+#if GNULIB_FOPEN_GNU
+            if (q < fdopen_mode_buf + BUF_SIZE)
+              *q++ = *p;
+#endif
+            continue;
+          case 'w':
+            open_direction = O_WRONLY;
+            open_flags |= O_CREAT | O_TRUNC;
+#if GNULIB_FOPEN_GNU
+            if (q < fdopen_mode_buf + BUF_SIZE)
+              *q++ = *p;
+#endif
+            continue;
+          case 'a':
+            open_direction = O_WRONLY;
+            open_flags |= O_CREAT | O_APPEND;
+#if GNULIB_FOPEN_GNU
+            if (q < fdopen_mode_buf + BUF_SIZE)
+              *q++ = *p;
+#endif
+            continue;
+          case 'b':
+            /* While it is non-standard, O_BINARY is guaranteed by
+               gnulib <fcntl.h>.  We can also assume that orig_fopen
+               supports the 'b' flag.  */
+            open_flags |= O_BINARY;
+#if GNULIB_FOPEN_GNU
+            if (q < fdopen_mode_buf + BUF_SIZE)
+              *q++ = *p;
+#endif
+            continue;
+          case '+':
+            open_direction = O_RDWR;
+#if GNULIB_FOPEN_GNU
+            if (q < fdopen_mode_buf + BUF_SIZE)
+              *q++ = *p;
+#endif
+            continue;
+#if GNULIB_FOPEN_GNU
+          case 'x':
+            open_flags |= O_EXCL;
+            open_flags_gnu = true;
+            continue;
+          case 'e':
+            open_flags |= O_CLOEXEC;
+            open_flags_gnu = true;
+            continue;
+#endif
+          default:
+            break;
+          }
+#if GNULIB_FOPEN_GNU
+        /* The rest of the mode string can be a platform-dependent extension.
+           Copy it unmodified.  */
+        {
+          size_t len = strlen (p);
+          if (len > fdopen_mode_buf + BUF_SIZE - q)
+            len = fdopen_mode_buf + BUF_SIZE - q;
+          memcpy (q, p, len);
+          q += len;
+        }
+#endif
+        break;
+      }
+#if GNULIB_FOPEN_GNU
+    *q = '\0';
+#endif
+  }
 
 #if FOPEN_TRAILING_SLASH_BUG
   /* Fail if the mode requires write access and the filename ends in a slash,
@@ -74,13 +170,14 @@ rpl_fopen (const char *filename, const char *mode)
         struct stat statbuf;
         FILE *fp;
 
-        if (mode[0] == 'w' || mode[0] == 'a')
+        if (open_direction != O_RDONLY)
           {
             errno = EISDIR;
             return NULL;
           }
 
-        fd = open (filename, O_RDONLY);
+        fd = open (filename, open_direction | open_flags,
+                   S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         if (fd < 0)
           return NULL;
 
@@ -91,7 +188,11 @@ rpl_fopen (const char *filename, const char *mode)
             return NULL;
           }
 
+# if GNULIB_FOPEN_GNU
+        fp = fdopen (fd, fdopen_mode_buf);
+# else
         fp = fdopen (fd, mode);
+# endif
         if (fp == NULL)
           {
             int saved_errno = errno;
@@ -101,7 +202,29 @@ rpl_fopen (const char *filename, const char *mode)
         return fp;
       }
   }
-# endif
+#endif
+
+#if GNULIB_FOPEN_GNU
+  if (open_flags_gnu)
+    {
+      int fd;
+      FILE *fp;
+
+      fd = open (filename, open_direction | open_flags,
+                 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+      if (fd < 0)
+        return NULL;
+
+      fp = fdopen (fd, fdopen_mode_buf);
+      if (fp == NULL)
+        {
+          int saved_errno = errno;
+          close (fd);
+          errno = saved_errno;
+        }
+      return fp;
+    }
+#endif
 
   return orig_fopen (filename, mode);
 }

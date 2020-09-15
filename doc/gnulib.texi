@@ -71,6 +71,7 @@ Documentation License''.
 * Glibc Header File Substitutes::   Overriding system headers.
 * Glibc Function Substitutes::      Replacing system functions.
 * Native Windows Support::          Support for the native Windows platforms.
+* Multithreading::                  Multiple threads of execution.
 * Particular Modules::              Documentation of individual modules.
 * Regular expressions::             The regex module.
 * Build Infrastructure Modules::    Modules that extend the GNU Build System.
@@ -740,7 +741,6 @@ better to share them.
 * Extra tests modules::
 * Modules that modify the way other modules work::
 * A C++ namespace for gnulib::      A different way of using Gnulib in C++
-* Running self-tests under valgrind::
 * License Texinfo sources::
 * Building gnulib::
 @end menu
@@ -754,8 +754,6 @@ better to share them.
 @include transversal.texi
 
 @include namespace.texi
-
-@include valgrind-tests.texi
 
 @include licenses-texi.texi
 
@@ -3684,6 +3682,7 @@ not worked around by Gnulib.
 * resolv.h::
 * shadow.h::
 * sys/ioctl.h::
+* sys/random.h::
 * sysexits.h::
 * ttyent.h::
 @end menu
@@ -3718,6 +3717,7 @@ not worked around by Gnulib.
 @include glibc-headers/resolv.texi
 @include glibc-headers/shadow.texi
 @include glibc-headers/sys_ioctl.texi
+@include glibc-headers/sys_random.texi
 @include glibc-headers/sysexits.texi
 @include glibc-headers/ttyent.texi
 
@@ -3829,6 +3829,7 @@ This list of functions is sorted according to the header that declares them.
 * Glibc sys/sem.h::
 * Glibc sys/sendfile.h::
 * Glibc sys/signalfd.h::
+* Glibc sys/single_threaded.h::
 * Glibc sys/socket.h::
 * Glibc sys/stat.h::
 * Glibc sys/statfs.h::
@@ -4743,6 +4744,8 @@ This list of functions is sorted according to the header that declares them.
 @menu
 * pthread_attr_getaffinity_np::
 * pthread_attr_setaffinity_np::
+* pthread_attr_getsigmask_np::
+* pthread_attr_setsigmask_np::
 * pthread_clockjoin_np::
 * pthread_cond_clockwait::
 * pthread_getaffinity_np::
@@ -4769,6 +4772,8 @@ This list of functions is sorted according to the header that declares them.
 
 @include glibc-functions/pthread_attr_getaffinity_np.texi
 @include glibc-functions/pthread_attr_setaffinity_np.texi
+@include glibc-functions/pthread_attr_getsigmask_np.texi
+@include glibc-functions/pthread_attr_setsigmask_np.texi
 @include glibc-functions/pthread_clockjoin_np.texi
 @include glibc-functions/pthread_cond_clockwait.texi
 @include glibc-functions/pthread_getaffinity_np.texi
@@ -5781,8 +5786,12 @@ This list of functions is sorted according to the header that declares them.
 * mempcpy::
 * memrchr::
 * rawmemchr::
+* sigabbrev_np::
+* sigdescr_np::
 * strcasestr::
 * strchrnul::
+* strerrordesc_np::
+* strerrorname_np::
 * strfry::
 * strsep::
 * strverscmp::
@@ -5796,8 +5805,12 @@ This list of functions is sorted according to the header that declares them.
 @include glibc-functions/mempcpy.texi
 @include glibc-functions/memrchr.texi
 @include glibc-functions/rawmemchr.texi
+@include glibc-functions/sigabbrev_np.texi
+@include glibc-functions/sigdescr_np.texi
 @include glibc-functions/strcasestr.texi
 @include glibc-functions/strchrnul.texi
+@include glibc-functions/strerrordesc_np.texi
+@include glibc-functions/strerrorname_np.texi
 @include glibc-functions/strfry.texi
 @include glibc-functions/strsep.texi
 @include glibc-functions/strverscmp.texi
@@ -6100,6 +6113,15 @@ This list of functions is sorted according to the header that declares them.
 
 @include glibc-functions/signalfd.texi
 
+@node Glibc sys/single_threaded.h
+@section Glibc @code{<sys/single_threaded.h>}
+
+@menu
+* __libc_single_threaded::
+@end menu
+
+@include glibc-functions/__libc_single_threaded.texi
+
 @node Glibc sys/socket.h
 @section Glibc Extensions to @code{<sys/socket.h>}
 
@@ -6119,10 +6141,12 @@ This list of functions is sorted according to the header that declares them.
 @section Glibc Extensions to @code{<sys/stat.h>}
 
 @menu
+* getumask::
 * lchmod::
 * statx::
 @end menu
 
+@include glibc-functions/getumask.texi
 @include glibc-functions/lchmod.texi
 @include glibc-functions/statx.texi
 
@@ -6630,6 +6654,7 @@ to POSIX that it can be treated like any other Unix-like platform.
 * Avoiding the year 2038 problem::
 * Windows sockets::
 * Native Windows Support without MSVC Support::
+* Visual Studio Compatibility::
 @end menu
 
 @include windows-libtool.texi
@@ -6646,6 +6671,11 @@ to POSIX that it can be treated like any other Unix-like platform.
 
 @include windows-without-msvc.texi
 
+@include ld-output-def.texi
+
+
+@include multithread.texi
+
 
 @node Particular Modules
 @chapter Particular Modules
@@ -6654,6 +6684,7 @@ to POSIX that it can be treated like any other Unix-like platform.
 * alloca::
 * alloca-opt::
 * Safe Allocation Macros::
+* Attributes::
 * Compile-time Assertions::
 * Non-returning Functions::
 * Integer Properties::
@@ -6684,6 +6715,8 @@ to POSIX that it can be treated like any other Unix-like platform.
 @include alloca-opt.texi
 
 @include safe-alloc.texi
+
+@include attribute.texi
 
 @include verify.texi
 
@@ -6760,10 +6793,10 @@ for use with GNU Automake (in particular).
 * Searching for Libraries::
 * Exported Symbols of Shared Libraries::
 * LD Version Scripts::
-* Visual Studio Compatibility::
 * configmake::
 * warnings::
 * manywarnings::
+* Running self-tests under valgrind::
 * VCS To ChangeLog::
 @end menu
 
@@ -6773,13 +6806,13 @@ for use with GNU Automake (in particular).
 
 @include ld-version-script.texi
 
-@include ld-output-def.texi
-
 @include configmake.texi
 
 @include warnings.texi
 
 @include manywarnings.texi
+
+@include valgrind-tests.texi
 
 @include vcs-to-changelog.texi
 

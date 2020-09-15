@@ -8,6 +8,8 @@ lib/fts-cycle.c
 m4/fts.m4
 
 Depends-on:
+attribute
+c99
 closedir
 cycle-check
 d-ino
@@ -21,6 +23,7 @@ hash
 i-ring
 lstat
 memmove
+open
 openat-h
 opendir
 opendirat

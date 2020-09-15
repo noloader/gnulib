@@ -17,10 +17,15 @@ lib/bitset/vector.c
 lib/bitset/vector.h
 
 Depends-on:
+attribute
 c99
+fopen-gnu
 gettext-h
 obstack
 xalloc
+
+configure.ac:
+AC_REQUIRE([AC_C_INLINE])
 
 Makefile.am:
 lib_SOURCES += bitset.c bitset/array.c bitset/stats.c \

@@ -65,9 +65,11 @@ extern "C" {
    gl_oset_size                O(1)     O(1)
    gl_oset_add                 O(n)   O(log n)
    gl_oset_remove              O(n)   O(log n)
+   gl_oset_update              O(n)   O(log n)
    gl_oset_search            O(log n) O(log n)
    gl_oset_search_atleast    O(log n) O(log n)
    gl_oset_iterator            O(1)   O(log n)
+   gl_oset_iterator_atleast  O(log n) O(log n)
    gl_oset_iterator_next       O(1)   O(log n)
  */
 
@@ -134,14 +136,23 @@ extern bool gl_oset_search_atleast (gl_oset_t set,
 extern bool gl_oset_add (gl_oset_t set, const void *elt);
 /* Likewise.  Returns -1 upon out-of-memory.  */
 extern int gl_oset_nx_add (gl_oset_t set, const void *elt)
-#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
-  __attribute__ ((__warn_unused_result__))
-#endif
-  ;
+  _GL_ATTRIBUTE_NODISCARD;
 
 /* Removes an element from an ordered set.
    Returns true if it was found and removed.  */
 extern bool gl_oset_remove (gl_oset_t set, const void *elt);
+
+/* Invokes ACTION (ELT, ACTION_DATA) and updates the given ordered set if,
+   during this invocation, the attributes/properties of the element ELT change
+   in a way that influences the comparison function.
+   Warning: During the invocation of ACTION, the ordered set is inconsistent
+   and must not be accessed!
+   Returns 1 if the position of the element in the ordered set has changed as
+   a consequence, 0 if the element stayed at the same position, or -1 if it
+   collided with another element and was therefore removed.  */
+extern int gl_oset_update (gl_oset_t set, const void *elt,
+                           void (*action) (const void *elt, void *action_data),
+                           void *action_data);
 
 /* Frees an entire ordered set.
    (But this call does not free the elements of the set.  It only invokes
@@ -176,6 +187,13 @@ typedef struct
    except for removing the last returned element.  */
 extern gl_oset_iterator_t gl_oset_iterator (gl_oset_t set);
 
+/* Creates an iterator traversing the tail of an ordered set, that comprises
+   the elements that compare greater or equal to the given THRESHOLD.  The
+   representation of the THRESHOLD is defined by the THRESHOLD_FN.  */
+extern gl_oset_iterator_t gl_oset_iterator_atleast (gl_oset_t set,
+                                                    gl_setelement_threshold_fn threshold_fn,
+                                                    const void *threshold);
+
 /* If there is a next element, stores the next element in *ELTP, advances the
    iterator and returns true.  Otherwise, returns false.  */
 extern bool gl_oset_iterator_next (gl_oset_iterator_t *iterator,
@@ -201,9 +219,15 @@ struct gl_oset_implementation
                           const void *threshold, const void **eltp);
   int (*nx_add) (gl_oset_t set, const void *elt);
   bool (*remove_elt) (gl_oset_t set, const void *elt);
+  int (*update) (gl_oset_t set, const void *elt,
+                 void (*action) (const void * /*elt*/, void * /*action_data*/),
+                 void *action_data);
   void (*oset_free) (gl_oset_t set);
   /* gl_oset_iterator_t functions.  */
   gl_oset_iterator_t (*iterator) (gl_oset_t set);
+  gl_oset_iterator_t (*iterator_atleast) (gl_oset_t set,
+                                          gl_setelement_threshold_fn threshold_fn,
+                                          const void *threshold);
   bool (*iterator_next) (gl_oset_iterator_t *iterator, const void **eltp);
   void (*iterator_free) (gl_oset_iterator_t *iterator);
 };
@@ -248,10 +272,7 @@ gl_oset_search_atleast (gl_oset_t set,
          ->search_atleast (set, threshold_fn, threshold, eltp);
 }
 
-GL_OSET_INLINE int
-#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
-  __attribute__ ((__warn_unused_result__))
-#endif
+GL_OSET_INLINE _GL_ATTRIBUTE_NODISCARD int
 gl_oset_nx_add (gl_oset_t set, const void *elt)
 {
   return ((const struct gl_oset_impl_base *) set)->vtable->nx_add (set, elt);
@@ -264,6 +285,15 @@ gl_oset_remove (gl_oset_t set, const void *elt)
          ->remove_elt (set, elt);
 }
 
+GL_OSET_INLINE int
+gl_oset_update (gl_oset_t set, const void *elt,
+                void (*action) (const void * /*elt*/, void * /*action_data*/),
+                void *action_data)
+{
+  return ((const struct gl_oset_impl_base *) set)->vtable
+         ->update (set, elt, action, action_data);
+}
+
 GL_OSET_INLINE void
 gl_oset_free (gl_oset_t set)
 {
@@ -274,6 +304,15 @@ GL_OSET_INLINE gl_oset_iterator_t
 gl_oset_iterator (gl_oset_t set)
 {
   return ((const struct gl_oset_impl_base *) set)->vtable->iterator (set);
+}
+
+GL_OSET_INLINE gl_oset_iterator_t
+gl_oset_iterator_atleast (gl_oset_t set,
+                          gl_setelement_threshold_fn threshold_fn,
+                          const void *threshold)
+{
+  return ((const struct gl_oset_impl_base *) set)->vtable
+         ->iterator_atleast (set, threshold_fn, threshold);
 }
 
 GL_OSET_INLINE bool

@@ -63,6 +63,10 @@
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 
+/* Don't assume that UNICODE is not defined.  */
+# undef GetModuleHandle
+# define GetModuleHandle GetModuleHandleA
+
 /* Avoid warnings from gcc -Wcast-function-type.  */
 # define GetProcAddress \
    (void *) GetProcAddress
@@ -81,7 +85,7 @@ typedef struct
   DWORDLONG ullAvailVirtual;
   DWORDLONG ullAvailExtendedVirtual;
 } lMEMORYSTATUSEX;
-typedef WINBOOL (WINAPI *PFN_MS_EX) (lMEMORYSTATUSEX*);
+typedef BOOL (WINAPI *PFN_MS_EX) (lMEMORYSTATUSEX*);
 
 #endif
 

@@ -30,6 +30,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <assert.h>
 #include <stdarg.h>
 #include <ctype.h>
@@ -570,7 +571,7 @@ hol_entry_short_iterate (const struct hol_entry *entry,
 }
 
 static inline int
-#if __GNUC__ >= 3
+#if (__GNUC__ >= 3) || (__clang_major__ >= 4)
 __attribute__ ((always_inline))
 #endif
 hol_entry_long_iterate (const struct hol_entry *entry,
@@ -1722,7 +1723,7 @@ __argp_short_program_name (void)
   /* FIXME: What now? Miles suggests that it is better to use NULL,
      but currently the value is passed on directly to fputs_unlocked,
      so that requires more changes. */
-# if __GNUC__
+# if __GNUC__ || (__clang_major__ >= 4)
 #  warning No reasonable value to return
 # endif /* __GNUC__ */
   return "";

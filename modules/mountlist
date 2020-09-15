@@ -8,7 +8,9 @@ m4/fstypename.m4
 m4/mountlist.m4
 
 Depends-on:
+fopen-gnu
 getline
+open
 stdbool
 stdint
 strstr-simple

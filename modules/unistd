@@ -6,6 +6,7 @@ m4/unistd_h.m4
 lib/unistd.c
 lib/unistd.in.h
 m4/off_t.m4
+m4/pid_t.m4
 
 Depends-on:
 extern-inline
@@ -55,6 +56,7 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's/@''GNULIB_GETCWD''@/$(GNULIB_GETCWD)/g' \
 	      -e 's/@''GNULIB_GETDOMAINNAME''@/$(GNULIB_GETDOMAINNAME)/g' \
 	      -e 's/@''GNULIB_GETDTABLESIZE''@/$(GNULIB_GETDTABLESIZE)/g' \
+	      -e 's/@''GNULIB_GETENTROPY''@/$(GNULIB_GETENTROPY)/g' \
 	      -e 's/@''GNULIB_GETGROUPS''@/$(GNULIB_GETGROUPS)/g' \
 	      -e 's/@''GNULIB_GETHOSTNAME''@/$(GNULIB_GETHOSTNAME)/g' \
 	      -e 's/@''GNULIB_GETLOGIN''@/$(GNULIB_GETLOGIN)/g' \
@@ -93,7 +95,6 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      < $(srcdir)/unistd.in.h | \
 	  sed -e 's|@''HAVE_CHOWN''@|$(HAVE_CHOWN)|g' \
 	      -e 's|@''HAVE_COPY_FILE_RANGE''@|$(HAVE_COPY_FILE_RANGE)|g' \
-	      -e 's|@''HAVE_DUP2''@|$(HAVE_DUP2)|g' \
 	      -e 's|@''HAVE_DUP3''@|$(HAVE_DUP3)|g' \
 	      -e 's|@''HAVE_EUIDACCESS''@|$(HAVE_EUIDACCESS)|g' \
 	      -e 's|@''HAVE_FACCESSAT''@|$(HAVE_FACCESSAT)|g' \
@@ -103,6 +104,7 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's|@''HAVE_FSYNC''@|$(HAVE_FSYNC)|g' \
 	      -e 's|@''HAVE_FTRUNCATE''@|$(HAVE_FTRUNCATE)|g' \
 	      -e 's|@''HAVE_GETDTABLESIZE''@|$(HAVE_GETDTABLESIZE)|g' \
+	      -e 's|@''HAVE_GETENTROPY''@|$(HAVE_GETENTROPY)|g' \
 	      -e 's|@''HAVE_GETGROUPS''@|$(HAVE_GETGROUPS)|g' \
 	      -e 's|@''HAVE_GETHOSTNAME''@|$(HAVE_GETHOSTNAME)|g' \
 	      -e 's|@''HAVE_GETPAGESIZE''@|$(HAVE_GETPAGESIZE)|g' \
@@ -172,6 +174,7 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's|@''REPLACE_UNLINKAT''@|$(REPLACE_UNLINKAT)|g' \
 	      -e 's|@''REPLACE_USLEEP''@|$(REPLACE_USLEEP)|g' \
 	      -e 's|@''REPLACE_WRITE''@|$(REPLACE_WRITE)|g' \
+	      -e 's|@''UNISTD_H_HAVE_SYS_RANDOM_H''@|$(UNISTD_H_HAVE_SYS_RANDOM_H)|g' \
 	      -e 's|@''UNISTD_H_HAVE_WINSOCK2_H''@|$(UNISTD_H_HAVE_WINSOCK2_H)|g' \
 	      -e 's|@''UNISTD_H_HAVE_WINSOCK2_H_AND_USE_SOCKETS''@|$(UNISTD_H_HAVE_WINSOCK2_H_AND_USE_SOCKETS)|g' \
 	      -e '/definitions of _GL_FUNCDECL_RPL/r $(CXXDEFS_H)' \

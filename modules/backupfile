@@ -10,10 +10,12 @@ m4/backupfile.m4
 
 Depends-on:
 argmatch
+attribute
+basename-lgpl
+c99
 closedir
 d-ino
 dirent-safer
-dirname-lgpl
 fcntl
 memcmp
 opendirat

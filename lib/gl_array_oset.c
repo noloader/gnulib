@@ -107,11 +107,15 @@ gl_array_search (gl_oset_t set, const void *elt)
   return gl_array_indexof (set, elt) != (size_t)(-1);
 }
 
-static bool
-gl_array_search_atleast (gl_oset_t set,
-                         gl_setelement_threshold_fn threshold_fn,
-                         const void *threshold,
-                         const void **eltp)
+/* Searches the least element in the ordered set that compares greater or equal
+   to the given THRESHOLD.  The representation of the THRESHOLD is defined
+   by the THRESHOLD_FN.
+   Returns the position at which it was found, or gl_list_size (SET) if not
+   found.  */
+static size_t
+gl_array_indexof_atleast (gl_oset_t set,
+                          gl_setelement_threshold_fn threshold_fn,
+                          const void *threshold)
 {
   size_t count = set->count;
 
@@ -148,13 +152,29 @@ gl_array_search_atleast (gl_oset_t set,
                   else
                     high = mid2;
                 }
-              *eltp = set->elements[low];
-              return true;
+              return low;
             }
         }
       while (low < high);
     }
-  return false;
+  return count;
+}
+
+static bool
+gl_array_search_atleast (gl_oset_t set,
+                         gl_setelement_threshold_fn threshold_fn,
+                         const void *threshold,
+                         const void **eltp)
+{
+  size_t index = gl_array_indexof_atleast (set, threshold_fn, threshold);
+
+  if (index == set->count)
+    return false;
+  else
+    {
+      *eltp = set->elements[index];
+      return true;
+    }
 }
 
 /* Ensure that set->allocated > set->count.
@@ -267,6 +287,116 @@ gl_array_remove (gl_oset_t set, const void *elt)
     return false;
 }
 
+static int
+gl_array_update (gl_oset_t set, const void *elt,
+                 void (*action) (const void * /*elt*/, void * /*action_data*/),
+                 void *action_data)
+{
+  /* Like gl_array_remove, action (...), gl_array_nx_add, except that we don't
+     actually remove ELT.  */
+  /* Remember the old position.  */
+  size_t old_index = gl_array_indexof (set, elt);
+  /* Invoke ACTION.  */
+  action (elt, action_data);
+  /* Determine the new position.  */
+  if (old_index != (size_t)(-1))
+    {
+      size_t count = set->count;
+
+      if (count > 1)
+        {
+          gl_setelement_compar_fn compar = set->base.compar_fn;
+          size_t low;
+          size_t high;
+
+          if (old_index > 0)
+            {
+              size_t mid = old_index - 1;
+              int cmp = (compar != NULL
+                         ? compar (set->elements[mid], elt)
+                         : (set->elements[mid] > elt ? 1 :
+                            set->elements[mid] < elt ? -1 : 0));
+              if (cmp < 0)
+                {
+                  low = old_index + 1;
+                  high = count;
+                }
+              else if (cmp > 0)
+                {
+                  low = 0;
+                  high = mid;
+                }
+              else /* cmp == 0 */
+                {
+                  /* Two adjacent elements are the same.  */
+                  gl_array_remove_at (set, old_index);
+                  return -1;
+                }
+            }
+          else
+            {
+              low = old_index + 1;
+              high = count;
+            }
+
+          /* At each loop iteration, low <= high; for indices < low the values
+             are smaller than ELT; for indices >= high the values are greater
+             than ELT.  So, if the element occurs in the list, it is at
+             low <= position < high.  */
+          while (low < high)
+            {
+              size_t mid = low + (high - low) / 2; /* low <= mid < high */
+              int cmp = (compar != NULL
+                         ? compar (set->elements[mid], elt)
+                         : (set->elements[mid] > elt ? 1 :
+                            set->elements[mid] < elt ? -1 : 0));
+
+              if (cmp < 0)
+                low = mid + 1;
+              else if (cmp > 0)
+                high = mid;
+              else /* cmp == 0 */
+                {
+                  /* Two elements are the same.  */
+                  gl_array_remove_at (set, old_index);
+                  return -1;
+                }
+            }
+
+          if (low < old_index)
+            {
+              /* Move the element from old_index to low.  */
+              size_t new_index = low;
+              const void **elements = set->elements;
+              size_t i;
+
+              for (i = old_index; i > new_index; i--)
+                elements[i] = elements[i - 1];
+              elements[new_index] = elt;
+              return true;
+            }
+          else
+            {
+              /* low > old_index.  */
+              /* Move the element from old_index to low - 1.  */
+              size_t new_index = low - 1;
+
+              if (new_index > old_index)
+                {
+                  const void **elements = set->elements;
+                  size_t i;
+
+                  for (i = old_index; i < new_index; i++)
+                    elements[i] = elements[i + 1];
+                  elements[new_index] = elt;
+                  return true;
+                }
+            }
+        }
+    }
+  return false;
+}
+
 static void
 gl_array_free (gl_oset_t set)
 {
@@ -302,6 +432,27 @@ gl_array_iterator (gl_oset_t set)
   result.set = set;
   result.count = set->count;
   result.p = set->elements + 0;
+  result.q = set->elements + set->count;
+#if defined GCC_LINT || defined lint
+  result.i = 0;
+  result.j = 0;
+#endif
+
+  return result;
+}
+
+static gl_oset_iterator_t
+gl_array_iterator_atleast (gl_oset_t set,
+                           gl_setelement_threshold_fn threshold_fn,
+                           const void *threshold)
+{
+  size_t index = gl_array_indexof_atleast (set, threshold_fn, threshold);
+  gl_oset_iterator_t result;
+
+  result.vtable = set->base.vtable;
+  result.set = set;
+  result.count = set->count;
+  result.p = set->elements + index;
   result.q = set->elements + set->count;
 #if defined GCC_LINT || defined lint
   result.i = 0;
@@ -350,8 +501,10 @@ const struct gl_oset_implementation gl_array_oset_implementation =
     gl_array_search_atleast,
     gl_array_nx_add,
     gl_array_remove,
+    gl_array_update,
     gl_array_free,
     gl_array_iterator,
+    gl_array_iterator_atleast,
     gl_array_iterator_next,
     gl_array_iterator_free
   };

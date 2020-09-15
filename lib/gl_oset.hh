@@ -80,8 +80,9 @@ public:
      by the THRESHOLD_FN.
      Returns true and store the found element in ELT if found, otherwise returns
      false.  */
-  bool search_atleast (bool (*threshold_fn) (ELTYPE * /*elt*/, ELTYPE * /*threshold*/),
-                       ELTYPE * threshold,
+  template <typename THT>
+  bool search_atleast (bool (*threshold_fn) (ELTYPE * /*elt*/, THT * /*threshold*/),
+                       THT * threshold,
                        ELTYPE *& elt) const
   { return gl_oset_search_atleast (_ptr, reinterpret_cast<gl_setelement_threshold_fn>(threshold_fn), threshold, &elt); }
 
@@ -96,6 +97,24 @@ public:
      Returns true if it was found and removed.  */
   bool remove (ELTYPE * elt)
     { return gl_oset_remove (_ptr, elt); }
+
+  /* Invokes ACTION (ELT, ACTION_DATA) and updates the ordered set if,
+     during this invocation, the attributes/properties of the element ELT change
+     in a way that influences the comparison function.
+     Warning: During the invocation of ACTION, the ordered set is inconsistent
+     and must not be accessed!
+     Returns 1 if the position of the element in the ordered set has changed as
+     a consequence, 0 if the element stayed at the same position, or -1 if it
+     collided with another element and was therefore removed.  */
+  template <typename DT>
+  int update (ELTYPE * elt,
+              void (*action) (ELTYPE * /*elt*/, DT * /*action_data*/),
+              DT *action_data)
+    {
+      return gl_oset_update (_ptr, elt,
+                             reinterpret_cast<void (*) (const void *, void *)> (action),
+                             action_data);
+    }
 
   /* Frees the entire ordered set.
      (But this call does not free the elements of the set.  It only invokes
@@ -121,7 +140,13 @@ public:
     /* If there is a next element, stores the next element in ELT, advances the
        iterator and returns true.  Otherwise, returns false.  */
     bool next (ELTYPE *& elt)
-      { return gl_oset_iterator_next (&_state, reinterpret_cast<const void **>(&elt)); }
+      {
+        const void *next_elt;
+        bool has_next = gl_oset_iterator_next (&_state, &next_elt);
+        if (has_next)
+          elt = static_cast<ELTYPE *>(next_elt);
+        return has_next;
+      }
 
     ~iterator ()
       { gl_oset_iterator_free (&_state); }
@@ -131,10 +156,19 @@ public:
   #else
   private:
     friend iterator gl_OSet::begin ();
+    template <typename THT>
+    friend iterator gl_OSet::begin_atleast (bool (*) (ELTYPE *, THT *), THT *);
   #endif
 
     iterator (gl_oset_t ptr)
       : _state (gl_oset_iterator (ptr))
+      {}
+
+    template <typename THT>
+    iterator (gl_oset_t ptr,
+              bool (*threshold_fn) (ELTYPE * /*elt*/, THT * /*threshold*/),
+              THT * threshold)
+      : _state (gl_oset_iterator_atleast (ptr, reinterpret_cast<gl_setelement_threshold_fn>(threshold_fn), threshold))
       {}
 
   private:
@@ -147,6 +181,16 @@ public:
      except for removing the last returned element.  */
   iterator begin ()
     { return iterator (_ptr); }
+
+  /* Creates an iterator traversing the tail of an ordered set, that comprises
+     the elements that compare greater or equal to the given THRESHOLD.  The
+     representation of the THRESHOLD is defined by the THRESHOLD_FN.
+     The set's contents must not be modified while the iterator is in use,
+     except for removing the last returned element.  */
+  template <typename THT>
+  iterator begin_atleast (bool (*threshold_fn) (ELTYPE * /*elt*/, THT * /*threshold*/),
+                          THT * threshold)
+    { return iterator (_ptr, threshold_fn, threshold); }
 };
 
 #endif /* _GL_OSET_HH */

@@ -137,6 +137,16 @@ public:
   ELTYPE * get_at (size_t position) const
     { return static_cast<ELTYPE *>(gl_list_get_at (_ptr, position)); }
 
+  /* Returns the element at the first position in the list.
+     The list must be non-empty.  */
+  ELTYPE * get_first () const
+    { return static_cast<ELTYPE *>(gl_list_get_first (_ptr)); }
+
+  /* Returns the element at the last position in the list.
+     The list must be non-empty.  */
+  ELTYPE * get_last () const
+    { return static_cast<ELTYPE *>(gl_list_get_last (_ptr)); }
+
   /* Searches whether an element is already in the list.
      Returns its node if found, or NULL if not present in the list.  */
   gl_list_node_t search (ELTYPE * elt) const
@@ -183,6 +193,18 @@ public:
   gl_list_node_t set_at (size_t position, ELTYPE * elt)
     { return gl_list_set_at (_ptr, position, elt); }
 
+  /* Replaces the element at the first position in the list.
+     Returns its node.
+     The list must be non-empty.  */
+  gl_list_node_t set_first (ELTYPE * elt)
+    { return gl_list_set_first (_ptr, elt); }
+
+  /* Replaces the element at the last position in the list.
+     Returns its node.
+     The list must be non-empty.  */
+  gl_list_node_t set_last (ELTYPE * elt)
+    { return gl_list_set_last (_ptr, elt); }
+
   /* Adds an element as the first element of the list.
      Returns its node.  */
   gl_list_node_t add_first (ELTYPE * elt)
@@ -218,6 +240,18 @@ public:
      Returns true.  */
   bool remove_at (size_t position)
     { return gl_list_remove_at (_ptr, position); }
+
+  /* Removes the element at the first position from the list.
+     Returns true if it was found and removed,
+     or false if the list was empty.  */
+  bool remove_first ()
+    { return gl_list_remove_first (_ptr); }
+
+  /* Removes the element at the last position from the list.
+     Returns true if it was found and removed,
+     or false if the list was empty.  */
+  bool remove_last ()
+    { return gl_list_remove_last (_ptr); }
 
   /* Searches and removes an element from the list.
      Returns true if it was found and removed.  */
@@ -317,13 +351,25 @@ public:
        the iterator and returns true.
        Otherwise, returns false.  */
     bool next (ELTYPE *& elt)
-      { return gl_list_iterator_next (&_state, reinterpret_cast<const void **>(&elt), NULL); }
+      {
+        const void *next_elt;
+        bool has_next = gl_list_iterator_next (&_state, &next_elt, NULL);
+        if (has_next)
+          elt = static_cast<ELTYPE *>(next_elt);
+        return has_next;
+      }
 
     /* If there is a next element, stores the next element in ELT, stores its
        node in *NODEP if NODEP is non-NULL, advances the iterator and returns true.
        Otherwise, returns false.  */
     bool next (ELTYPE *& elt, gl_list_node_t *nodep)
-      { return gl_list_iterator_next (&_state, reinterpret_cast<const void **>(&elt), nodep); }
+      {
+        const void *next_elt;
+        bool has_next = gl_list_iterator_next (&_state, &next_elt, nodep);
+        if (has_next)
+          elt = static_cast<ELTYPE *>(next_elt);
+        return has_next;
+      }
 
     ~iterator ()
       { gl_list_iterator_free (&_state); }

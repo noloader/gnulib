@@ -34,24 +34,13 @@
 # define __NTH(fct) fct __THROW
 #endif
 
-/* The __attribute__ feature is available in gcc versions 2.5 and later.
-   The __-protected variants of the attributes 'format' and 'printf' are
-   accepted by gcc versions 2.6.4 (effectively 2.7) and later.
-   We enable _GL_ATTRIBUTE_FORMAT only if these are supported too, because
-   gnulib and libintl do '#define printf __printf__' when they override
-   the 'printf' function.  */
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
-# define _GL_ATTRIBUTE_FORMAT(spec) __attribute__ ((__format__ spec))
-#else
-# define _GL_ATTRIBUTE_FORMAT(spec) /* empty */
-#endif
-
 /* GCC 2.95 and later have "__restrict"; C99 compilers have
    "restrict", and "configure" may have defined "restrict".
    Other compilers use __restrict, __restrict__, and _Restrict, and
    'configure' might #define 'restrict' to those words.  */
 #ifndef __restrict
-# if ! (2 < __GNUC__ || (2 == __GNUC__ && 95 <= __GNUC_MINOR__))
+# if ! (2 < __GNUC__ || (2 == __GNUC__ && 95 <= __GNUC_MINOR__) \
+        || __clang_major__ >= 3)
 #  if 199901L <= __STDC_VERSION__
 #   define __restrict restrict
 #  else

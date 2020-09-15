@@ -73,31 +73,35 @@ main (int argc, char *argv[])
   }
 
   /* Check that length 0 does not dereference the pointer.  */
-  {
-    const char *result = memmem (zerosize_ptr (), 0, "foo", 3);
-    ASSERT (result == NULL);
-  }
+  void *page_boundary = zerosize_ptr ();
+  if (page_boundary)
+    {
+      {
+        const char *result = memmem (page_boundary, 0, "foo", 3);
+        ASSERT (result == NULL);
+      }
 
-  {
-    const char input[] = "foo";
-    const char *result = memmem (input, strlen (input), zerosize_ptr (), 0);
-    ASSERT (result == input);
-  }
+      {
+        const char input[] = "foo";
+        const char *result = memmem (input, strlen (input), page_boundary, 0);
+        ASSERT (result == input);
+      }
+    }
 
   /* Check that a long periodic needle does not cause false positives.  */
   {
-    const char input[] = ("F_BD_CE_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD"
-                          "_C3_88_20_EF_BF_BD_EF_BF_BD_EF_BF_BD"
-                          "_C3_A7_20_EF_BF_BD");
+    const char input[] = "F_BD_CE_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD"
+                         "_C3_88_20_EF_BF_BD_EF_BF_BD_EF_BF_BD"
+                         "_C3_A7_20_EF_BF_BD";
     const char need[] = "_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD";
     const char *result = memmem (input, strlen (input), need, strlen (need));
     ASSERT (result == NULL);
   }
   {
-    const char input[] = ("F_BD_CE_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD"
-                          "_C3_88_20_EF_BF_BD_EF_BF_BD_EF_BF_BD"
-                          "_C3_A7_20_EF_BF_BD_DA_B5_C2_A6_20"
-                          "_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD");
+    const char input[] = "F_BD_CE_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD"
+                         "_C3_88_20_EF_BF_BD_EF_BF_BD_EF_BF_BD"
+                         "_C3_A7_20_EF_BF_BD_DA_B5_C2_A6_20"
+                         "_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD";
     const char need[] = "_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD_EF_BF_BD";
     const char *result = memmem (input, strlen (input), need, strlen (need));
     ASSERT (result == input + 115);

@@ -37,18 +37,50 @@ extern "C" {
    and the temporary directories can be removed, because only on Unix
    (excluding Cygwin) can one remove directories containing open files.
 
-   This module provides support for temporary directories and temporary files
-   inside these temporary directories.  Temporary files without temporary
-   directories are not supported here.  The temporary directories and files
-   are automatically cleaned up (at the latest) when the program exits or
-   dies from a fatal signal such as SIGINT, SIGTERM, SIGHUP, but not if it
-   dies from a fatal signal such as SIGQUIT, SIGKILL, or SIGABRT, SIGSEGV,
-   SIGBUS, SIGILL, SIGFPE.
+   This module provides support for
+     - temporary directories and temporary files inside these temporary
+       directories,
+     - temporary files without temporary directories.
+   The temporary directories and files are automatically cleaned up (at the
+   latest) when the program exits or dies from a fatal signal such as SIGINT,
+   SIGTERM, SIGHUP, but not if it dies from a fatal signal such as SIGQUIT,
+   SIGKILL, or SIGABRT, SIGSEGV, SIGBUS, SIGILL, SIGFPE.
 
    For the cleanup in the normal case, programs that use this module need to
    call 'cleanup_temp_dir' for each successful return of 'create_temp_dir'.
    The cleanup in the case of a fatal signal such as SIGINT, SIGTERM, SIGHUP,
-   is done entirely automatically by the functions of this module.  */
+   is done entirely automatically by the functions of this module.
+
+   Limitations: Files or directories can still be left over if
+     - the program is dies from a fatal signal such as SIGQUIT, SIGKILL, or
+       SIGABRT, SIGSEGV, SIGBUS, SIGILL, SIGFPE, or
+     - in a multithreaded program, the fatal signal handler is already running
+       while another thread of the program creates a new temporary directory
+       or temporary file, or
+     - on native Windows, some temporary files are used by a subprocess while
+       the fatal signal interrupts the program.
+ */
+
+
+/* ============= Temporary files without temporary directories ============= */
+
+/* Register the given ABSOLUTE_FILE_NAME as being a file that needs to be
+   removed.
+   Should be called before the file ABSOLUTE_FILE_NAME is created.  */
+extern void register_temporary_file (const char *absolute_file_name);
+
+/* Unregister the given ABSOLUTE_FILE_NAME as being a file that needs to be
+   removed.
+   Should be called when the file ABSOLUTE_FILE_NAME could not be created.  */
+extern void unregister_temporary_file (const char *absolute_file_name);
+
+/* Remove the given ABSOLUTE_FILE_NAME and unregister it.
+   CLEANUP_VERBOSE determines whether errors are reported to standard error.
+   Return 0 upon success, or -1 if there was some problem.  */
+extern int cleanup_temporary_file (const char *absolute_file_name,
+                                   bool cleanup_verbose);
+
+/* ========= Temporary directories and temporary files inside them ========= */
 
 struct temp_dir
 {
@@ -116,21 +148,49 @@ extern int cleanup_temp_dir_contents (struct temp_dir *dir);
    Return 0 upon success, or -1 if there was some problem.  */
 extern int cleanup_temp_dir (struct temp_dir *dir);
 
-/* Open a temporary file in a temporary directory.
-   Registers the resulting file descriptor to be closed.  */
-extern int open_temp (const char *file_name, int flags, mode_t mode);
-extern FILE * fopen_temp (const char *file_name, const char *mode);
+/* ================== Opening and closing temporary files ================== */
 
-/* Close a temporary file in a temporary directory.
+/* Open a temporary file in a temporary directory.
+   FILE_NAME must already have been passed to register_temp_file.
+   Registers the resulting file descriptor to be closed.
+   DELETE_ON_CLOSE indicates whether the file can be deleted when the resulting
+   file descriptor or stream is closed.  */
+extern int open_temp (const char *file_name, int flags, mode_t mode,
+                      bool delete_on_close);
+extern FILE * fopen_temp (const char *file_name, const char *mode,
+                          bool delete_on_close);
+
+/* Open a temporary file, generating its name based on FILE_NAME_TMPL.
+   FILE_NAME_TMPL must match the rules for mk[s]temp (i.e. end in "XXXXXX",
+   possibly with a suffix).  The name constructed does not exist at the time
+   of the call.  FILE_NAME_TMPL is overwritten with the result.
+   A safe choice for MODE is S_IRUSR | S_IWUSR, a.k.a. 0600.
+   Registers the file for deletion.
+   Opens the file, with the given FLAGS and mode MODE.
+   Registers the resulting file descriptor to be closed.  */
+extern int gen_register_open_temp (char *file_name_tmpl, int suffixlen,
+                                   int flags, mode_t mode);
+
+/* Close a temporary file.
+   FD must have been returned by open_temp or gen_register_open_temp.
    Unregisters the previously registered file descriptor.  */
 extern int close_temp (int fd);
+
+/* Close a temporary file.
+   FP must have been returned by fopen_temp, or by fdopen on a file descriptor
+   returned by open_temp or gen_register_open_temp.
+   Unregisters the previously registered file descriptor.  */
 extern int fclose_temp (FILE *fp);
 
 /* Like fwriteerror.
+   FP must have been returned by fopen_temp, or by fdopen on a file descriptor
+   returned by open_temp or gen_register_open_temp.
    Unregisters the previously registered file descriptor.  */
 extern int fwriteerror_temp (FILE *fp);
 
 /* Like close_stream.
+   FP must have been returned by fopen_temp, or by fdopen on a file descriptor
+   returned by open_temp or gen_register_open_temp.
    Unregisters the previously registered file descriptor.  */
 extern int close_stream_temp (FILE *fp);
 

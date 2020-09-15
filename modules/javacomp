@@ -16,12 +16,14 @@ classpath
 xsetenv
 sh-quote
 binary-io
+open
 safe-read
 xalloc
 xmalloca
 getline
 xconcat-filename
 fwriteerror
+fopen-gnu
 clean-temp
 stat
 error
@@ -41,6 +43,7 @@ Include:
 
 Link:
 $(LIB_MBRTOWC)
+$(LIB_GETRANDOM)
 
 License:
 GPL

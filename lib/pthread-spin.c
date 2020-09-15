@@ -21,6 +21,8 @@
 /* Specification.  */
 #include <pthread.h>
 
+#include <stdbool.h>
+
 #if (defined _WIN32 && ! defined __CYGWIN__) && USE_WINDOWS_THREADS
 # include "windows-spin.h"
 #endif
@@ -66,11 +68,62 @@ pthread_spin_destroy (pthread_spinlock_t *lock)
 /* We don't use the C11 <stdatomic.h> (available in GCC >= 4.9) because it would
    require to link with -latomic.  */
 
-# if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
-/* Use GCC built-ins (available in GCC >= 4.7) that operate on the first byte
-   of the lock.
+# if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7) \
+      || __clang_major > 3 || (__clang_major__ == 3 && __clang_minor__ >= 1)) \
+     && !defined __ibmxl__
+/* Use GCC built-ins (available in GCC >= 4.7 and clang >= 3.1) that operate on
+   the first byte of the lock.
    Documentation:
    <https://gcc.gnu.org/onlinedocs/gcc-4.7.0/gcc/_005f_005fatomic-Builtins.html>  */
+
+#  if 1
+/* An implementation that verifies the unlocks.  */
+
+int
+pthread_spin_init (pthread_spinlock_t *lock,
+                   int shared_across_processes _GL_UNUSED)
+{
+  __atomic_store_n ((unsigned int *) lock, 0, __ATOMIC_SEQ_CST);
+  return 0;
+}
+
+int
+pthread_spin_lock (pthread_spinlock_t *lock)
+{
+  /* Wait until *lock becomes 0, then replace it with 1.  */
+  unsigned int zero;
+  while (!(zero = 0,
+           __atomic_compare_exchange_n ((unsigned int *) lock, &zero, 1, false,
+                                        __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)))
+    ;
+  return 0;
+}
+
+int
+pthread_spin_trylock (pthread_spinlock_t *lock)
+{
+  unsigned int zero;
+  if (!(zero = 0,
+        __atomic_compare_exchange_n ((unsigned int *) lock, &zero, 1, false,
+                                     __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)))
+    return EBUSY;
+  return 0;
+}
+
+int
+pthread_spin_unlock (pthread_spinlock_t *lock)
+{
+  /* If *lock is 1, then replace it with 0.  */
+  unsigned int one = 1;
+  if (!__atomic_compare_exchange_n ((unsigned int *) lock, &one, 0, false,
+                                    __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST))
+    abort ();
+  return 0;
+}
+
+#  else
+/* An implementation that is a little bit more optimized, but does not verify
+   the unlocks.  */
 
 int
 pthread_spin_init (pthread_spinlock_t *lock,
@@ -100,6 +153,56 @@ int
 pthread_spin_unlock (pthread_spinlock_t *lock)
 {
   __atomic_clear (lock, __ATOMIC_SEQ_CST);
+  return 0;
+}
+
+#  endif
+
+int
+pthread_spin_destroy (pthread_spinlock_t *lock)
+{
+  return 0;
+}
+
+# elif (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1) \
+        || __clang_major__ >= 3) \
+       && !defined __ibmxl__
+/* Use GCC built-ins (available in GCC >= 4.1 and clang >= 3.0).
+   Documentation:
+   <https://gcc.gnu.org/onlinedocs/gcc-4.1.2/gcc/Atomic-Builtins.html>  */
+
+int
+pthread_spin_init (pthread_spinlock_t *lock,
+                   int shared_across_processes _GL_UNUSED)
+{
+  * (volatile unsigned int *) lock = 0;
+  __sync_synchronize ();
+  return 0;
+}
+
+int
+pthread_spin_lock (pthread_spinlock_t *lock)
+{
+  /* Wait until *lock becomes 0, then replace it with 1.  */
+  while (__sync_val_compare_and_swap ((unsigned int *) lock, 0, 1) != 0)
+    ;
+  return 0;
+}
+
+int
+pthread_spin_trylock (pthread_spinlock_t *lock)
+{
+  if (__sync_val_compare_and_swap ((unsigned int *) lock, 0, 1) != 0)
+    return EBUSY;
+  return 0;
+}
+
+int
+pthread_spin_unlock (pthread_spinlock_t *lock)
+{
+  /* If *lock is 1, then replace it with 0.  */
+  if (__sync_val_compare_and_swap ((unsigned int *) lock, 1, 0) != 1)
+    abort ();
   return 0;
 }
 

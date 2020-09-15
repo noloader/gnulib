@@ -22,7 +22,8 @@
 
 #include "backup-internal.h"
 
-#include "dirname.h"
+#include "attribute.h"
+#include "basename-lgpl.h"
 #include "opendirat.h"
 #include "renameatu.h"
 #include "xalloc-oversized.h"
@@ -34,14 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#ifndef FALLTHROUGH
-# if __GNUC__ < 7
-#  define FALLTHROUGH ((void) 0)
-# else
-#  define FALLTHROUGH __attribute__ ((__fallthrough__))
-# endif
-#endif
 
 #ifndef _D_EXACT_NAMLEN
 # define _D_EXACT_NAMLEN(dp) strlen ((dp)->d_name)

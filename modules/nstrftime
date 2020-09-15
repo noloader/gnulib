@@ -8,6 +8,9 @@ m4/tm_gmtoff.m4
 m4/nstrftime.m4
 
 Depends-on:
+attribute
+c99
+errno
 extensions
 intprops
 stdbool

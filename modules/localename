@@ -13,12 +13,14 @@ m4/lcmessage.m4
 
 Depends-on:
 extensions
+stdbool
 locale
 flexmember
 strdup
 lock
 langinfo
 setlocale-null
+thread-optim
 
 configure.ac:
 gl_LOCALENAME

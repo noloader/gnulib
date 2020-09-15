@@ -34,7 +34,7 @@ AIX 5.2, Solaris 11.4, mingw, MSVC 14.
 @item
 This function does not support the @samp{a} and @samp{A} directives on some
 platforms:
-glibc-2.3.6, Mac OS X 10.5, NetBSD 5.0, OpenBSD 4.0, AIX 5.2, HP-UX 11,
+glibc-2.3.6, Mac OS X 10.5, NetBSD 9.0, OpenBSD 4.0, AIX 5.2, HP-UX 11,
 IRIX 6.5, Solaris 11.4, Cygwin 1.5.x, mingw, MSVC 14.
 @item
 This function does not support the @samp{F} directive on some platforms:
@@ -57,11 +57,11 @@ Mac OS X 10.12, FreeBSD 6.1.
 @item
 printf @code{"%010f"} of NaN and Infinity yields an incorrect result (padded
 with zeroes, or wrong capitalization) on some platforms:
-Mac OS X 10.5, FreeBSD 6.0, NetBSD 5.0, AIX 5.2, IRIX 6.5, Solaris 11.4, Cygwin 1.5.x, mingw, MSVC 14.
+Mac OS X 10.5, FreeBSD 6.0, NetBSD 5.0, AIX 5.2, IRIX 6.5, Solaris 11.4, Cygwin 1.5.x, mingw, MSVC/clang.
 @item
 This function does not support precisions larger than 512 or 1024 in integer,
 floating-point and pointer output on some platforms:
-AIX 7.1, Solaris 10/x86, mingw, MSVC 14.
+AIX 7.1, Solaris 10/x86, mingw, MSVC/clang.
 @item
 This function mishandles large floating point precisions
 (for example, formatting 1.0 with @samp{"%.511f"})
@@ -76,7 +76,7 @@ mingw, MSVC 14.
 @item
 This function does not fully support the @samp{n} directive on some platforms:
 glibc when used with @code{_FORTIFY_SOURCE >= 2} (set by default on Ubuntu),
-HP-UX 11, mingw, MSVC 14.
+Mac OS X 10.13, HP-UX 11, mingw, MSVC 14.
 @item
 This function overwrites memory even when a zero size argument is passed on some
 platforms:

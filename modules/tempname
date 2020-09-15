@@ -8,23 +8,31 @@ lib/tempname.h
 m4/tempname.m4
 
 Depends-on:
+c99
+clock-time
 extensions
 fcntl-h
-gettimeofday
+getrandom
+libc-config
 lstat
 mkdir
+stdalign
 stdint
 sys_stat
-sys_time
+time
 
 configure.ac:
 gl_FUNC_GEN_TEMPNAME
+gl_MODULE_INDICATOR([tempname])
 
 Makefile.am:
 lib_SOURCES += tempname.c
 
 Include:
 "tempname.h"
+
+Link:
+$(LIB_GETRANDOM)
 
 License:
 LGPLv2+

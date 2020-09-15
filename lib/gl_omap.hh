@@ -89,8 +89,9 @@ public:
      THRESHOLD is defined by the THRESHOLD_FN.
      Returns true and stores the found pair in KEY and VALUE if found.
      Otherwise returns false.  */
-  bool search_atleast (bool (*threshold_fn) (KEYTYPE * /*key*/, KEYTYPE * /*threshold*/),
-                       KEYTYPE * threshold,
+  template <typename THT>
+  bool search_atleast (bool (*threshold_fn) (KEYTYPE * /*key*/, THT * /*threshold*/),
+                       THT * threshold,
                        KEYTYPE *& key, VALUETYPE *& value) const
   { return gl_omap_search_atleast (_ptr, reinterpret_cast<gl_mapkey_threshold_fn>(threshold_fn), threshold, &key, &value); }
 
@@ -150,7 +151,17 @@ public:
     /* If there is a next pair, stores the next pair in KEY and VALUE, advances
        the iterator, and returns true.  Otherwise, returns false.  */
     bool next (KEYTYPE *& key, VALUETYPE *& value)
-      { return gl_omap_iterator_next (&_state, reinterpret_cast<const void **>(&key), reinterpret_cast<const void **>(&value)); }
+      {
+        const void *next_key;
+        const void *next_value;
+        bool has_next = gl_omap_iterator_next (&_state, &next_key, &next_value);
+        if (has_next)
+          {
+            key = static_cast<KEYTYPE *>(next_key);
+            value = static_cast<VALUETYPE *>(next_value);
+          }
+        return has_next;
+      }
 
     ~iterator ()
       { gl_omap_iterator_free (&_state); }

@@ -35,12 +35,6 @@
 
 #include <config.h>
 
-#ifndef __attribute__
-# if __GNUC__ < 3
-#  define __attribute__(x)
-# endif
-#endif
-
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
@@ -70,6 +64,10 @@ typedef struct sigaltstack stack_t;
 #endif
 
 #include <unistd.h>
+
+#if DEBUG
+# include <stdio.h>
+#endif
 
 #if HAVE_LIBSIGSEGV
 # include <sigsegv.h>
@@ -174,7 +172,7 @@ segv_handler (void *address _GL_UNUSED, int serious)
     char buf[1024];
     int saved_errno = errno;
     sprintf (buf, "segv_handler serious=%d\n", serious);
-    write (STDERR_FILENO, buf, strlen (buf));
+    ignore_value (write (STDERR_FILENO, buf, strlen (buf)));
     errno = saved_errno;
   }
 # endif
@@ -197,7 +195,7 @@ overflow_handler (int emergency, stackoverflow_context_t context _GL_UNUSED)
     char buf[1024];
     sprintf (buf, "overflow_handler emergency=%d segv_handler_missing=%d\n",
              emergency, segv_handler_missing);
-    write (STDERR_FILENO, buf, strlen (buf));
+    ignore_value (write (STDERR_FILENO, buf, strlen (buf)));
   }
 # endif
 
@@ -270,7 +268,7 @@ segv_handler (int signo, siginfo_t *info, void *context _GL_UNUSED)
                  "segv_handler fault=%p base=%p size=%lx page=%lx signo=%d\n",
                  faulting_address, stack_base, (unsigned long) stack_size,
                  (unsigned long) page_size, signo);
-        write (STDERR_FILENO, buf, strlen (buf));
+        ignore_value (write (STDERR_FILENO, buf, strlen (buf)));
       }
 #   endif
     }

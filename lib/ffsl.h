@@ -27,6 +27,22 @@
 #include <limits.h>
 #include <strings.h>
 
+#if defined _MSC_VER && !(__clang_major__ >= 4)
+# include <intrin.h>
+/* Copied from ffs.c.  */
+static inline int
+ffs (int i)
+{
+  /* _BitScanForward
+     <https://docs.microsoft.com/en-us/cpp/intrinsics/bitscanforward-bitscanforward64> */
+  unsigned long bit;
+  if (_BitScanForward (&bit, i))
+    return bit + 1;
+  else
+    return 0;
+}
+#endif
+
 #if !defined FUNC || !defined TYPE
 # error
 #endif
@@ -34,8 +50,17 @@
 int
 FUNC (TYPE i)
 {
-#if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)) && defined GCC_BUILTIN
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) \
+    || (__clang_major__ >= 4)
   return GCC_BUILTIN (i);
+#elif defined _MSC_VER && defined MSVC_BUILTIN
+  /* _BitScanForward, _BitScanForward64
+     <https://docs.microsoft.com/en-us/cpp/intrinsics/bitscanforward-bitscanforward64> */
+  unsigned long bit;
+  if (MSVC_BUILTIN (&bit, i))
+    return bit + 1;
+  else
+    return 0;
 #else
   unsigned TYPE j = i;
   /* Split j into chunks, and look at one chunk after the other.  */

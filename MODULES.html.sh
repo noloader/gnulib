@@ -1727,7 +1727,6 @@ func_all_modules ()
 
   func_begin_table
   func_module fprintftime
-  func_module localtime-buffer
   func_module nstrftime
   func_module strftime-fixes
   func_module time_rz
@@ -2319,6 +2318,8 @@ func_all_modules ()
   func_echo "$element"
 
   func_begin_table
+  func_module c-dtoastr
+  func_module c-ldtoast
   func_module dtoastr
   func_module ftoastr
   func_module intprops
@@ -2364,9 +2365,19 @@ func_all_modules ()
   func_echo "$element"
 
   func_begin_table
+  func_module attribute
   func_module builtin-expect
   func_module ieee754-h
   func_module limits-h
+  func_end_table
+
+  element="Support for GNU multiple precision arithmetic"
+  func_section_wrap gmp
+  func_wrap H2
+  func_echo "$element"
+
+  func_begin_table
+  func_module libgmp
   func_end_table
 
   element="Support for sharing code with the GNU C Library"
@@ -2584,7 +2595,6 @@ func_all_modules ()
   func_module d-ino
   func_module d-type
   func_module link-follow
-  func_module rename-dest-slash
   func_module rmdir-errno
   func_module timer-time
   func_module unlink-busy
@@ -2606,7 +2616,6 @@ func_all_modules ()
   func_module iconv_open-utf
   func_module unistd-safer
   func_module fnmatch
-  func_module fnmatch-posix
   func_module fnmatch-gnu
   func_module glob
   func_module exclude
@@ -3138,11 +3147,12 @@ func_all_modules ()
   func_module uniname/base
   func_module uniname/uniname
   func_module unictype/base
-  func_module unictype/bidicategory-byname
-  func_module unictype/bidicategory-name
-  func_module unictype/bidicategory-of
-  func_module unictype/bidicategory-test
-  func_module unictype/bidicategory-all
+  func_module unictype/bidiclass-byname
+  func_module unictype/bidiclass-name
+  func_module unictype/bidiclass-longname
+  func_module unictype/bidiclass-of
+  func_module unictype/bidiclass-test
+  func_module unictype/bidiclass-all
   func_module unictype/block-list
   func_module unictype/block-of
   func_module unictype/block-test
@@ -3484,9 +3494,11 @@ func_all_modules ()
   func_module forkpty
   func_module getdomainname
   func_module xgetdomainname
+  func_module getentropy
   func_module getloadavg
   func_module getpagesize
   func_module getprogname
+  func_module getrandom
   func_module getusershell
   func_module lib-symbol-visibility
   func_module login_tty
